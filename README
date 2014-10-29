@@ -1,0 +1,16 @@
+1. Team Members: 
+   Magesh Ramachandran email: magesh23@ccs.neu.edu 
+   Mayank Narasimhan email: mayankn@ccs.neu.edu
+   Narendran K P email: naren90@ccs.neu.edu
+
+2. Compilation and execution:
+   gunzip and untar the contents of the prototype
+   Execute the 'make' command in the root directory of the prototype to
+   compile all the necessary files using the Makefile
+   Then execute the dam.sh shell script in the following format:
+   ./dam -f <path_to_first_file> -f <path_to_second_file>
+
+3. Acknowledgements:
+   Non recursive FFT - Translated from the pseudocode given in 
+   Introduction to Algorithms - Third Edition by
+   Cormen, Thomas H.,  Leiserson, Charles E.,  Rivest, Ronald L
