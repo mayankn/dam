@@ -7,15 +7,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
+ * 
  */
 public class WavFile extends AudioFile {
     private byte[] fileData;
     private String fileName;
     private String shortName;
+    private static final int CANONICAL_SAMPLING_RATE = 44100;
     private Map<String, Object> headerMap = new HashMap<String, Object>();
+    private int duplicatingFactor = 1;
 
     public WavFile(String fName) throws IOException {
         this.fileName = fName;
@@ -33,6 +37,68 @@ public class WavFile extends AudioFile {
             throw new RuntimeException("ERROR: insufficient data in file");
         }
         extractHeaderData();
+        canonicalizeFile();
+    }
+
+    private void canonicalizeFile() {
+        int sampleRate = (Integer)headerMap.get("FMT_SAMPLE_RATE");
+        switch (sampleRate) {
+            case 44100:
+                break;
+            case 22050:
+            case 11025:
+                convertToCanonicalForm(sampleRate);
+                break;
+            case 48000:
+                // TODO
+                break;
+        }
+
+    }
+
+    private void convertToCanonicalForm(int sampleRate) {
+        duplicatingFactor = (CANONICAL_SAMPLING_RATE / sampleRate);
+        int duplicatingLength = (duplicatingFactor * (fileData.length - 44)) + 44;
+        System.out.println("duplicating length: " + duplicatingLength);
+        System.out.println("file data length: " + fileData.length);
+        System.out.println("sample rate: " + sampleRate);
+        byte[] newFileData = new byte[duplicatingLength];
+        byte tmp;
+        /*for (int i = 44; i < duplicatingLength; i = i + duplicatingFactor) {
+            tmp = fileData[i/duplicatingFactor];
+            //tmp = 0;
+            switch (duplicatingFactor) {
+                case 2:
+                    newFileData[i] = tmp;
+                    newFileData[i + 1] = (byte)0;
+                    break;
+                case 4:
+                    newFileData[i] = tmp;
+                    newFileData[i + 1] = tmp;
+                    newFileData[i + 2] = tmp;
+                    newFileData[i + 3] = tmp;
+            }
+        }*/
+        int j = 44;
+        for(int i = 44; i < fileData.length-1; i++) {
+            tmp = fileData[i];
+            switch (duplicatingFactor) {
+                case 2:
+                    newFileData[j] = tmp;
+                    newFileData[j+1] = 0;
+                    j += duplicatingFactor;
+                    break;
+                case 4:
+                    newFileData[j] = tmp;
+                    newFileData[j+1] = 0;
+                    newFileData[j+2] = 0;
+                    newFileData[j+3] = 0;
+                    j += duplicatingFactor;
+                    break;
+            }
+        }
+        fileData = newFileData;
+        //headerMap.put("DATA_DWORD", ((Integer)headerMap.get("DATA_DWORD") * duplicatingFactor) - 4);
     }
 
     /**
@@ -100,6 +166,8 @@ public class WavFile extends AudioFile {
         int bpsPerChannel = (Integer) headerMap.get("FMT_SIGNIFICANT_BPS") / 8;
         int bps = bpsPerChannel * numChannels;
         int channelDataLength = ((Integer) headerMap.get("DATA_DWORD")) / bps;
+        channelDataLength = channelDataLength * duplicatingFactor;
+        //System.out.println((Integer) headerMap.get("DATA_DWORD") + " " + bps);
         boolean isSingleChannel = (numChannels == 1);
         double[] avg = new double[channelDataLength];
         int idx = 0;
@@ -165,8 +233,9 @@ public class WavFile extends AudioFile {
 
     /**
      * To validate if the given file name is valid and has .wav extension
-     *
-     * @param fileName - file name
+     * 
+     * @param fileName
+     *            - file name
      * @return - true if the given file name is valid, false otherwise
      */
     public static boolean isFileExtensionValid(String fileName) {

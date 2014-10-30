@@ -16,6 +16,7 @@ public class StreamConsumer implements Runnable {
         this.inputStream = is;
     }
 
+    @Override
     public void run() {
         try {
             BufferedReader reader = new BufferedReader(

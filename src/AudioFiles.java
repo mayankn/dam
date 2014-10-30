@@ -21,7 +21,25 @@ public abstract class AudioFiles {
             "/course/cs5500f14/bin/lame --decode %s %s";
     private static String INVALID_FILE_PATH =
             "ERROR: Incorrect file path, file %s was not found";
-    private static String CONVERTED_FILES_DIRECTORY = "converted";
+    private static String CONVERTED_FILES_DIRECTORY1 = File.separator + "tmp"
+            + File.separator + "dam-mmn" + File.separator + "1";
+    private static String CONVERTED_FILES_DIRECTORY2 = File.separator + "tmp"
+            + File.separator + "dam-mmn" + File.separator + "2";
+
+    // TODO: This is WORK IN PROGRESS
+    public static AudioFile[] makeAudioFilesFromArg(String flag,
+                                                    String fpath,
+                                                    int paramNum)
+            throws IOException, InterruptedException {
+        AudioFile[] listOfFiles2;
+        if ("-f".equals(flag)) {
+            listOfFiles2 = new AudioFile[]{AudioFiles
+                    .makeAudioFileByExtension(fpath)};
+        } else {
+            listOfFiles2 = AudioFiles.makeAllAudioFilesInDirectory(fpath);
+        }
+        return listOfFiles2;
+    }
 
     public static AudioFile makeAudioFileByExtension(String fileName)
             throws IOException, InterruptedException {
@@ -72,7 +90,7 @@ public abstract class AudioFiles {
         String shortName = f.getName();
         String nameWithWavExtension = shortName.replace(".", "") + ".wav";
         String cmd = String.format(CONVERT_TO_WAV_COMMAND, fileName,
-                CONVERTED_FILES_DIRECTORY + File.separator
+                CONVERTED_FILES_DIRECTORY1 + File.separator
                         + nameWithWavExtension);
         Process proc = Runtime.getRuntime().exec(cmd);
         StreamConsumer outputStreamConsumer =
@@ -89,7 +107,7 @@ public abstract class AudioFiles {
         int exitValue = proc.waitFor();
         //System.out.println("exit value: " + exitValue);
         if (exitValue == 0)
-            convertedFileName = CONVERTED_FILES_DIRECTORY + File.separator
+            convertedFileName = CONVERTED_FILES_DIRECTORY1 + File.separator
                     + nameWithWavExtension;
         return convertedFileName;
     }

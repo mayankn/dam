@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,28 +26,12 @@ public class dam {
         try {
             Long st = System.currentTimeMillis();
             validateCommandLineArguments(args);
-            AudioFile[] listOfFiles1;
-            AudioFile[] listOfFiles2;
+            AudioFile[] listOfFiles1 = makeAudioFilesFromArg(args[0], args[1]);
+            AudioFile[] listOfFiles2 = makeAudioFilesFromArg(args[2], args[3]);
             Map<Integer, List<AnalyzableSamples>> mapOfAnalyzableSamples1ByDuration =
                     new HashMap<Integer, List<AnalyzableSamples>>();
             Map<Integer, List<AnalyzableSamples>> mapOfAnalyzableSamples2ByDuration =
                     new HashMap<Integer, List<AnalyzableSamples>>();
-            if ("-f".equals(args[0])) {
-                listOfFiles1 =
-                        new AudioFile[]{AudioFiles
-                                .makeAudioFileByExtension(args[1])};
-            } else {
-                listOfFiles1 = AudioFiles.makeAllAudioFilesInDirectory(args[1]);
-            }
-
-            if ("-f".equals(args[2])) {
-                listOfFiles2 =
-                        new AudioFile[]{AudioFiles
-                                .makeAudioFileByExtension(args[3])};
-            } else {
-                listOfFiles2 = AudioFiles.makeAllAudioFilesInDirectory(args[3]);
-            }
-
             prepareMapOfAnalyzableSamplesByDuration(listOfFiles1,
                     mapOfAnalyzableSamples1ByDuration);
             prepareMapOfAnalyzableSamplesByDuration(listOfFiles2,
@@ -80,13 +65,26 @@ public class dam {
         }
     }
 
-    private static void prepareMapOfAnalyzableSamplesByDuration(
+    private static AudioFile[] makeAudioFilesFromArg(String flag, String fpath)
+            throws IOException, InterruptedException {
+        AudioFile[] listOfFiles2;
+        if ("-f".equals(flag)) {
+            listOfFiles2 = new AudioFile[]{AudioFiles
+                    .makeAudioFileByExtension(fpath)};
+        } else {
+            listOfFiles2 = AudioFiles.makeAllAudioFilesInDirectory(fpath);
+        }
+        return listOfFiles2;
+    }
+
+    private static void prepareMapOfAnalyzableSamplesByDuration (
             AudioFile[] listOfFiles1,
             Map<Integer, List<AnalyzableSamples>>
                     mapOfAnalyzableSamples1ByDuration) {
         int duration;
         for (AudioFile af : listOfFiles1) {
             duration = af.getDurationInSeconds();
+            //System.out.println(duration);
             List<AnalyzableSamples> asl =
                     mapOfAnalyzableSamples1ByDuration.get(duration);
             AnalyzableSamples as =

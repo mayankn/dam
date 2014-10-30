@@ -25,4 +25,13 @@
 #    fi
 #fi
 
+# clearing old tmp files
+rm -rf /tmp/dam-mmn/
+# create directory to hold tmp files
+mkdir /tmp/dam-mmn
+mkdir /tmp/dam-mmn/1
+mkdir /tmp/dam-mmn/2
+# execute java program
 java -cp out dam $@
+# clear out all tmp files
+rm -rf /tmp/dam-mmn/
