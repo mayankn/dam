@@ -117,9 +117,9 @@ public class WavFile extends AudioFile {
                     break;
                 case 4:
                     newFileSamples[i*duplicatingFactor] = tmp;
-                    newFileSamples[(i*duplicatingFactor) + 1] = 0;
-                    newFileSamples[(i*duplicatingFactor) + 2] = 0;
-                    newFileSamples[(i*duplicatingFactor) + 3] = 0;
+                    newFileSamples[(i*duplicatingFactor) + 1] = tmp;
+                    newFileSamples[(i*duplicatingFactor) + 2] = tmp;
+                    newFileSamples[(i*duplicatingFactor) + 3] = tmp;
                     break;
             }
         }
