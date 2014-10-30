@@ -26,8 +26,8 @@ public class dam {
         try {
             Long st = System.currentTimeMillis();
             validateCommandLineArguments(args);
-            AudioFile[] listOfFiles1 = makeAudioFilesFromArg(args[0], args[1]);
-            AudioFile[] listOfFiles2 = makeAudioFilesFromArg(args[2], args[3]);
+            AudioFile[] listOfFiles1 = AudioFiles.makeAudioFilesFromArg(args[0], args[1], 1);
+            AudioFile[] listOfFiles2 = AudioFiles.makeAudioFilesFromArg(args[2], args[3], 2);
             Map<Integer, List<AnalyzableSamples>> mapOfAnalyzableSamples1ByDuration =
                     new HashMap<Integer, List<AnalyzableSamples>>();
             Map<Integer, List<AnalyzableSamples>> mapOfAnalyzableSamples2ByDuration =
@@ -65,7 +65,7 @@ public class dam {
         }
     }
 
-    private static AudioFile[] makeAudioFilesFromArg(String flag, String fpath)
+    /*private static AudioFile[] makeAudioFilesFromArg(String flag, String fpath)
             throws IOException, InterruptedException {
         AudioFile[] listOfFiles2;
         if ("-f".equals(flag)) {
@@ -75,7 +75,7 @@ public class dam {
             listOfFiles2 = AudioFiles.makeAllAudioFilesInDirectory(fpath);
         }
         return listOfFiles2;
-    }
+    }*/
 
     private static void prepareMapOfAnalyzableSamplesByDuration (
             AudioFile[] listOfFiles1,

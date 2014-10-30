@@ -47,7 +47,8 @@ public class WavFile extends AudioFile {
                 break;
             case 22050:
             case 11025:
-                convertToCanonicalForm(sampleRate);
+                duplicatingFactor = (CANONICAL_SAMPLING_RATE / sampleRate);
+                //convertToCanonicalForm(sampleRate);
                 break;
             case 48000:
                 // TODO
@@ -57,7 +58,7 @@ public class WavFile extends AudioFile {
     }
 
     private void convertToCanonicalForm(int sampleRate) {
-        duplicatingFactor = (CANONICAL_SAMPLING_RATE / sampleRate);
+        //duplicatingFactor = (CANONICAL_SAMPLING_RATE / sampleRate);
         int duplicatingLength = (duplicatingFactor * (fileData.length - 44)) + 44;
         System.out.println("duplicating length: " + duplicatingLength);
         System.out.println("file data length: " + fileData.length);
@@ -82,6 +83,7 @@ public class WavFile extends AudioFile {
         int j = 44;
         for(int i = 44; i < fileData.length-1; i++) {
             tmp = fileData[i];
+            tmp = (byte) 0;
             switch (duplicatingFactor) {
                 case 2:
                     newFileData[j] = tmp;
@@ -99,6 +101,29 @@ public class WavFile extends AudioFile {
         }
         fileData = newFileData;
         //headerMap.put("DATA_DWORD", ((Integer)headerMap.get("DATA_DWORD") * duplicatingFactor) - 4);
+    }
+
+    private double[] convertToCanonicalForm(double[] fileSamples) {
+        int samplesLength = fileSamples.length;
+        double[] newFileSamples = new double[samplesLength * duplicatingFactor];
+        for(int i = 0; i < samplesLength-1; i++) {
+            double tmp = fileSamples[i];
+            switch (duplicatingFactor) {
+                case 2:
+                    newFileSamples[i*duplicatingFactor] = tmp;
+                    newFileSamples[(i*duplicatingFactor) + 1] = tmp;
+                    // this is for linear interpolation (thos works too)
+                    //newFileSamples[(i*duplicatingFactor) + 1] = (tmp + fileSamples[i+1])/2;
+                    break;
+                case 4:
+                    newFileSamples[i*duplicatingFactor] = tmp;
+                    newFileSamples[(i*duplicatingFactor) + 1] = 0;
+                    newFileSamples[(i*duplicatingFactor) + 2] = 0;
+                    newFileSamples[(i*duplicatingFactor) + 3] = 0;
+                    break;
+            }
+        }
+        return newFileSamples;
     }
 
     /**
@@ -202,6 +227,8 @@ public class WavFile extends AudioFile {
                 avg[idx++] = (right + left) / 2;
             }
         }
+        if (duplicatingFactor != 1)
+            return convertToCanonicalForm(avg);
         return avg;
     }
 
