@@ -18,8 +18,7 @@ public class WavFile extends AudioFile {
     private String fileName;
     private String shortName;
     private static final int CANONICAL_SAMPLING_RATE = 44100;
-    private Map<String, Object> headerMap = new HashMap<String, Object>();
-    private int duplicatingFactor = 1;
+    private Map<String, Object> headerMap = new HashMap<String, Object>();    
 
     public WavFile(String fName) throws IOException {
         this.fileName = fName;
@@ -37,93 +36,36 @@ public class WavFile extends AudioFile {
             throw new RuntimeException("ERROR: insufficient data in file");
         }
         extractHeaderData();
-        canonicalizeFile();
     }
-
-    private void canonicalizeFile() {
-        int sampleRate = (Integer)headerMap.get("FMT_SAMPLE_RATE");
-        switch (sampleRate) {
-            case 44100:
-                break;
-            case 22050:
-            case 11025:
-                duplicatingFactor = (CANONICAL_SAMPLING_RATE / sampleRate);
-                //convertToCanonicalForm(sampleRate);
-                break;
-            case 48000:
-                // TODO
-                break;
-        }
-
-    }
-
-    private void convertToCanonicalForm(int sampleRate) {
-        //duplicatingFactor = (CANONICAL_SAMPLING_RATE / sampleRate);
-        int duplicatingLength = (duplicatingFactor * (fileData.length - 44)) + 44;
-        System.out.println("duplicating length: " + duplicatingLength);
-        System.out.println("file data length: " + fileData.length);
-        System.out.println("sample rate: " + sampleRate);
-        byte[] newFileData = new byte[duplicatingLength];
-        byte tmp;
-        /*for (int i = 44; i < duplicatingLength; i = i + duplicatingFactor) {
-            tmp = fileData[i/duplicatingFactor];
-            //tmp = 0;
-            switch (duplicatingFactor) {
-                case 2:
-                    newFileData[i] = tmp;
-                    newFileData[i + 1] = (byte)0;
-                    break;
-                case 4:
-                    newFileData[i] = tmp;
-                    newFileData[i + 1] = tmp;
-                    newFileData[i + 2] = tmp;
-                    newFileData[i + 3] = tmp;
-            }
-        }*/
-        int j = 44;
-        for(int i = 44; i < fileData.length-1; i++) {
-            tmp = fileData[i];
-            tmp = (byte) 0;
-            switch (duplicatingFactor) {
-                case 2:
-                    newFileData[j] = tmp;
-                    newFileData[j+1] = 0;
-                    j += duplicatingFactor;
-                    break;
-                case 4:
-                    newFileData[j] = tmp;
-                    newFileData[j+1] = 0;
-                    newFileData[j+2] = 0;
-                    newFileData[j+3] = 0;
-                    j += duplicatingFactor;
-                    break;
-            }
-        }
-        fileData = newFileData;
-        //headerMap.put("DATA_DWORD", ((Integer)headerMap.get("DATA_DWORD") * duplicatingFactor) - 4);
-    }
-
-    private double[] convertToCanonicalForm(double[] fileSamples) {
-        int samplesLength = fileSamples.length;
-        double[] newFileSamples = new double[samplesLength * duplicatingFactor];
-        for(int i = 0; i < samplesLength-1; i++) {
-            double tmp = fileSamples[i];
-            switch (duplicatingFactor) {
-                case 2:
-                    newFileSamples[i*duplicatingFactor] = tmp;
-                    newFileSamples[(i*duplicatingFactor) + 1] = tmp;
-                    // this is for linear interpolation (thos works too)
-                    //newFileSamples[(i*duplicatingFactor) + 1] = (tmp + fileSamples[i+1])/2;
-                    break;
-                case 4:
-                    newFileSamples[i*duplicatingFactor] = tmp;
-                    newFileSamples[(i*duplicatingFactor) + 1] = tmp;
-                    newFileSamples[(i*duplicatingFactor) + 2] = tmp;
-                    newFileSamples[(i*duplicatingFactor) + 3] = tmp;
-                    break;
-            }
-        }
-        return newFileSamples;
+    
+	private double[] convertToCanonicalForm(double[] data) {
+		int dataLength = data.length;
+		int sampleRate = (Integer) headerMap.get("FMT_SAMPLE_RATE");
+		int duplicatingFactor = (CANONICAL_SAMPLING_RATE / sampleRate);
+		if (duplicatingFactor == 1) {
+			return data;
+		}		
+		double[] newFileSamples = new double[dataLength * duplicatingFactor];
+		for (int i = 0; i < dataLength - 1; i++) {
+			double tmp = data[i];
+			int j = i * duplicatingFactor;
+			double offset = (data[i + 1] - tmp);
+			switch (duplicatingFactor) {
+			case 2:
+				newFileSamples[j] = tmp;
+				// newFileSamples[j + 1] = tmp;
+				// this is for linear interpolation (this works too)
+				newFileSamples[j + 1] = (tmp + offset / 2);
+				break;
+			case 4:
+				newFileSamples[j] = tmp;
+				newFileSamples[j + 1] = tmp + (offset / 4);
+				newFileSamples[j + 2] = tmp + (offset * (2 / 4));
+				newFileSamples[j + 3] = tmp + (offset * (3 / 4));
+				break;
+			}
+		}
+		return newFileSamples;
     }
 
     /**
@@ -190,9 +132,7 @@ public class WavFile extends AudioFile {
         int numChannels = (Integer) headerMap.get("FMT_NO_OF_CHANNELS");
         int bpsPerChannel = (Integer) headerMap.get("FMT_SIGNIFICANT_BPS") / 8;
         int bps = bpsPerChannel * numChannels;
-        int channelDataLength = ((Integer) headerMap.get("DATA_DWORD")) / bps;
-        channelDataLength = channelDataLength * duplicatingFactor;
-        //System.out.println((Integer) headerMap.get("DATA_DWORD") + " " + bps);
+        int channelDataLength = ((Integer) headerMap.get("DATA_DWORD")) / bps;        
         boolean isSingleChannel = (numChannels == 1);
         double[] avg = new double[channelDataLength];
         int idx = 0;
@@ -211,7 +151,7 @@ public class WavFile extends AudioFile {
             } else if (bpsPerChannel == 4) {
                 val = wrapped.getInt();
             } else if (bpsPerChannel == 1) {
-                val = fileData[i];
+                val = wrapped.get();
             } else {
                 throw new RuntimeException("ERROR: Bytes per sample of "
                         + bpsPerChannel + " is not supported ");
@@ -226,10 +166,8 @@ public class WavFile extends AudioFile {
                 left = val;
                 avg[idx++] = (right + left) / 2;
             }
-        }
-        if (duplicatingFactor != 1)
-            return convertToCanonicalForm(avg);
-        return avg;
+        }                  
+        return convertToCanonicalForm(avg);
     }
 
     /**

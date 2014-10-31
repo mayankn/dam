@@ -1,9 +1,5 @@
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author: Magesh Ramachandran
@@ -19,42 +15,28 @@ public abstract class AudioFiles {
             "ERROR: invalid command line, the given path is not a directory";
     private static String NO_FILES_IN_DIRECTORY =
             "ERROR: No files in the given directory";
-    private static String CONVERT_TO_WAV_COMMAND =
-            "/course/cs5500f14/bin/lame --decode %s %s";
-    private static String INVALID_FILE_PATH =
-            "ERROR: Incorrect file path, file %s was not found";
-    private static String CONVERTED_FILES_DIRECTORY = File.separator + "tmp"
-            + File.separator + "dam-mmn";
-    private static final int NUM_THREADS = 8;
-
+   
     // TODO: This is WORK IN PROGRESS
     public static AudioFile[] makeAudioFilesFromArg(String flag,
                                                     String fpath,
                                                     int paramNum)
             throws IOException, InterruptedException {
-
-        // Thread pools to make the mp3 conversion multi-threaded
-        //ExecutorService poolOfTasks = Executors.newFixedThreadPool(NUM_THREADS);
-        //ExecutorService poolOfHelpers = Executors.newFixedThreadPool(NUM_THREADS/2);
         AudioFile[] listOfFiles2;
         if ("-f".equals(flag)) {
             listOfFiles2 = new AudioFile[]{AudioFiles
-                    .makeAudioFileByExtension(fpath, paramNum)};
+                    .makeAudioFileByExtension(fpath, paramNum, false)};
         } else {
             listOfFiles2 = AudioFiles.makeAllAudioFilesInDirectory(fpath, paramNum);
         }
         return listOfFiles2;
     }
 
-    public static AudioFile makeAudioFileByExtension(String fileName, int paramNum)
+    public static AudioFile makeAudioFileByExtension(String fileName, int paramNum, boolean isDirectory)
             throws IOException, InterruptedException {
         AudioFile.FILE_TYPE ftype = AudioFile.getFileTypeFromName(fileName);
         AudioFile af = null;
         if (ftype == AudioFile.FILE_TYPE.MP3) {
-            String convertedFileName = convertAudioFileToWav(fileName, paramNum);
-            if (convertedFileName != null) {
-                af = new WavFile(convertedFileName);
-            }
+        	af = new Mp3File(fileName, isDirectory, paramNum);        
         } else if (ftype == AudioFile.FILE_TYPE.WAV) {
             af = new WavFile(fileName);
         } else {
@@ -79,41 +61,9 @@ public abstract class AudioFiles {
         int idx = 0;
         for (String f : fileNames) {
             audioFiles[idx++] = AudioFiles.makeAudioFileByExtension(
-                    fi.getAbsolutePath() + File.separator + f, paramNum);
+                    fi.getAbsolutePath() + File.separator + f, paramNum, true);
         }
         return audioFiles;
     }
-
-    private static String convertAudioFileToWav(String fileName, int paramNum)
-            throws IOException, InterruptedException {
-        String convertedFileName = null;
-        File f = new File(fileName);
-        if (!f.isFile()) {
-            throw new RuntimeException(String.format(INVALID_FILE_PATH,
-                    fileName));
-        }
-        String shortName = f.getName();
-        String nameWithWavExtension = shortName.replace(".", "") + ".wav";
-        String cmd = String.format(CONVERT_TO_WAV_COMMAND, fileName,
-                CONVERTED_FILES_DIRECTORY + File.separator + paramNum
-                        + File.separator + nameWithWavExtension);
-        Process proc = Runtime.getRuntime().exec(cmd);
-        StreamConsumer outputStreamConsumer =
-                new StreamConsumer(proc.getInputStream());
-        StreamConsumer errorStreamConsumer =
-                new StreamConsumer(proc.getErrorStream());
-
-        // kick off both stream consumers
-        Thread t1 = new Thread(outputStreamConsumer, "output");
-        Thread t2 = new Thread(errorStreamConsumer, "error");
-        t1.start();
-        t2.start();
-
-        int exitValue = proc.waitFor();
-        //System.out.println("exit value: " + exitValue);
-        if (exitValue == 0)
-            convertedFileName = CONVERTED_FILES_DIRECTORY + File.separator
-                    + paramNum + File.separator + nameWithWavExtension;
-        return convertedFileName;
-    }
+   
 }
