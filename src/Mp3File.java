@@ -15,74 +15,76 @@ import java.util.Map;
  */
 public class Mp3File extends AudioFile {
 
-	private static String CONVERT_TO_WAV_COMMAND =
-            "/course/cs5500f14/bin/lame --decode %s %s";
+    private static String LAME_DECODER_PATH = "/course/cs5500f14/bin/lame";
     private static String INVALID_FILE_PATH =
             "ERROR: Incorrect file path, file %s was not found";
     private static String CONVERTED_FILES_DIRECTORY = File.separator + "tmp"
             + File.separator + "dam-mmn";
 
-
-	private Map<String, Object> headerMap = new HashMap<String, Object>();
+    private Map<String, Object> headerMap = new HashMap<String, Object>();
     private byte[] fileData;
-    private String shortName;    
+    private String shortName;
     private String fileName;
     private Mp3decoder mp3Decoder;
     private AudioFile internalRepresentation;
     private Thread thisConverter;
 
-    static class Mp3decoder implements Runnable{
-    	String shortName;
-    	String fileName;
-    	int paramNum;
-    	AudioFile convertedFile;
-    	
-    	private Mp3decoder(String shortName, String fileName, int paramNum) {
-    		this.shortName = shortName;
-    		this.fileName = fileName;
-    		this.paramNum = paramNum;
-    	}
-    	
-    	public AudioFile getConvertedFile() {
-    		return this.convertedFile;
-    	}
-    	
-    	public void run() {
-    		try {
-    		String convertedFileName = null;
-    		String nameWithWavExtension = shortName.replace(".", "") + ".wav";
-    		String cmd = String.format(CONVERT_TO_WAV_COMMAND, fileName,
-    				CONVERTED_FILES_DIRECTORY + File.separator + paramNum
-    						+ File.separator + nameWithWavExtension);
-    		Process proc = Runtime.getRuntime().exec(cmd);
-    		
-    		 BufferedReader reader = new BufferedReader(
-                     new InputStreamReader(proc.getInputStream()));
-    		 BufferedReader errReader = new BufferedReader(
-                     new InputStreamReader(proc.getErrorStream()));
-             while (reader.readLine() != null && errReader.readLine() != null) {                 
-             }
-             reader.close();
-             errReader.close();
-    		int exitValue = 1;
-    		try {
-    			exitValue = proc.waitFor();
-    		} catch (InterruptedException ie) {
-    			throw new RuntimeException("ERROR: An unexpected error has occured");
-    		}
+    static class Mp3decoder implements Runnable {
+        String shortName;
+        String fileName;
+        int paramNum;
+        AudioFile convertedFile;
 
-    		if (exitValue == 0)
-    			convertedFileName = CONVERTED_FILES_DIRECTORY + File.separator
-    					+ paramNum + File.separator + nameWithWavExtension;
-    		
-				convertedFile = new WavFile(convertedFileName);
-			} catch (IOException e) {
-				throw new RuntimeException("ERROR: An unexpected error has occured");
-			}
-    	}
+        private Mp3decoder(String shortName, String fileName, int paramNum) {
+            this.shortName = shortName;
+            this.fileName = fileName;
+            this.paramNum = paramNum;
+        }
+
+        public AudioFile getConvertedFile() {
+            return this.convertedFile;
+        }
+
+        public void run() {
+            try {
+                String convertedFileName = null;
+                String nameWithWavExtension =
+                        shortName.replaceAll("(.mp3)$", ".wav");
+                ProcessBuilder p =
+                        new ProcessBuilder(LAME_DECODER_PATH, "--decode",
+                                fileName, CONVERTED_FILES_DIRECTORY
+                                        + File.separator + paramNum
+                                        + File.separator + nameWithWavExtension);
+                p.redirectErrorStream(true);
+                Process proc = p.start();
+                BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(
+                                proc.getInputStream()));
+                while (reader.readLine() != null) {
+                }
+                reader.close();
+                try {
+                    proc.waitFor();
+                } catch (InterruptedException ie) {
+                    throw new RuntimeException(
+                            "ERROR: An unexpected error has occured");
+                }
+                proc.destroy();
+                p = null;
+                convertedFileName =
+                        CONVERTED_FILES_DIRECTORY + File.separator + paramNum
+                                + File.separator + nameWithWavExtension;
+                convertedFile = new WavFile(convertedFileName);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(
+                        "ERROR: An unexpected error has occured");
+            }
+        }
     }
 
-    public Mp3File(String fName, boolean isDirectory, int paramNum) throws IOException {
+    public Mp3File(String fName, boolean isDirectory, int paramNum)
+            throws IOException {
         File f = new File(fName);
         if (!f.isFile()) {
             throw new RuntimeException(String.format(INVALID_FILE_PATH, fName));
@@ -95,19 +97,18 @@ public class Mp3File extends AudioFile {
         if (fileData.length < 4) {
             throw new RuntimeException("ERROR: insufficient data in file");
         }
-        extractHeaderData();        
+        extractHeaderData();
         this.fileName = fName;
         validateFileFormat();
-        mp3Decoder = new Mp3decoder(shortName, fileName, paramNum);        
+        mp3Decoder = new Mp3decoder(shortName, fileName, paramNum);
         thisConverter = new Thread(mp3Decoder);
         thisConverter.start();
-       // convertFileToInternalRepresentation();
     }
 
     private void validateFileFormat() {
-    	
+
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -133,8 +134,7 @@ public class Mp3File extends AudioFile {
         headerMap.put("COPYRIGHT", readBitChunks(fileData, 3, 3));
         headerMap.put("ORIGINAL", readBitChunks(fileData, 2, 2));
         headerMap.put("EMPHASIS", readBitChunks(fileData, 0, 1));
-        System.out.println(headerMap);
-    }  
+    }
 
     private String readBitChunks(byte[] fileData, int si, int ei) {
         String a =
@@ -142,56 +142,55 @@ public class Mp3File extends AudioFile {
                         + Integer.toBinaryString(fileData[2] & 0xff)
                         + Integer.toBinaryString(fileData[1] & 0xff)
                         + Integer.toBinaryString(fileData[0] & 0xff);
-        return a.substring(si, ei + 1);     
+        return a.substring(si, ei + 1);
     }
-    
-    
-    
-	@Override
-	public Map<String, Object> getHeaderData() {		
-		return headerMap;
-	}
 
-	@Override
-	public boolean areFileDurationsTheSame(AudioFile af2) {
-		setInternalRepresentation();
-		return internalRepresentation.areFileDurationsTheSame(af2);
-	}
+    @Override
+    public Map<String, Object> getHeaderData() {
+        return headerMap;
+    }
 
-	@Override
-	public double[] extractChannelData() {
-		setInternalRepresentation();
-		return internalRepresentation.extractChannelData();
-	}
+    @Override
+    public boolean areFileDurationsTheSame(AudioFile af2) {
+        setInternalRepresentation();
+        return internalRepresentation.areFileDurationsTheSame(af2);
+    }
 
-	@Override
-	public boolean isAudioFileFormatValid() {
-		setInternalRepresentation();
-		return internalRepresentation.isAudioFileFormatValid();
-	}
+    @Override
+    public double[] extractChannelData() {
+        setInternalRepresentation();
+        return internalRepresentation.extractChannelData();
+    }
 
-	@Override
-	public int getDurationInSeconds() {
-		setInternalRepresentation();
-		return internalRepresentation.getDurationInSeconds();
-	}
-	
-	
-	public static void main(String arg[]) throws IOException {
-	        AudioFile a = new Mp3File("D:\\audiosample\\Sor3508.mp3", true, 1);
-	}
-	
-	private void setInternalRepresentation() {
-		if (internalRepresentation == null) {
-			try {
-				thisConverter.join();
-			} catch (InterruptedException ie) {
-				throw new RuntimeException(
-						"ERROR: an unexpected error has occured");
-			}
-			internalRepresentation = mp3Decoder.getConvertedFile();
-			mp3Decoder = null;
-		}
-	}
+    @Override
+    public boolean isAudioFileFormatValid() {
+        setInternalRepresentation();
+        return internalRepresentation.isAudioFileFormatValid();
+    }
+
+    @Override
+    public int getDurationInSeconds() {
+        setInternalRepresentation();
+        return internalRepresentation.getDurationInSeconds();
+    }
+
+    public static void main(String arg[]) throws IOException {
+        AudioFile a = new Mp3File("D:\\audiosample\\Sor3508.mp3", true, 1);
+    }
+
+    private void setInternalRepresentation() {
+        if (internalRepresentation == null) {
+            try {
+                thisConverter.join();
+            } catch (InterruptedException ie) {
+                throw new RuntimeException(
+                        "ERROR: an unexpected error has occured");
+            }
+            internalRepresentation = mp3Decoder.getConvertedFile();
+            mp3Decoder = null;
+            thisConverter = null;
+            fileData = null;
+        }
+    }
 
 }

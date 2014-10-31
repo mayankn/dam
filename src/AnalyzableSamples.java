@@ -22,7 +22,7 @@ public abstract class AnalyzableSamples {
 
     protected AnalyzableSamples(double[] samples, int fftsize) {
         slen = samples.length;
-        int bufferedlen = slen + (fftsize - slen % fftsize);
+        int bufferedlen = slen + (fftsize - slen % fftsize);        
         this.samples = new double[bufferedlen];
         this.fftResult = new double[bufferedlen << 1];
         System.arraycopy(samples, 0, this.samples, 0, slen);
