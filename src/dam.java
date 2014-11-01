@@ -18,10 +18,20 @@ public class dam {
 
     private static String INVALID_COMMAND_ERROR = "ERROR: Invalid command line";    
     private static String MATCH = "MATCH %s %s";
+    
+    public static boolean errorOccured;
 
-    public static void main(String args[]) {
+    public static boolean isErrorOccured() {
+		return errorOccured;
+	}
+
+	public static void setErrorOccured(boolean errorOccured) {
+		dam.errorOccured = errorOccured;
+	}
+
+	public static void main(String args[]) {
         try {
-            Long st = System.currentTimeMillis();
+            //Long st = System.currentTimeMillis();
             validateCommandLineArguments(args);
             AudioFile[] listOfFiles1 =
                     AudioFiles.makeAudioFilesFromArg(args[0], args[1], 1);
@@ -38,12 +48,12 @@ public class dam {
 
             for (int duration : mapOfAnalyzableSamples1ByDuration.keySet()) {
                 List<AnalyzableSamples> asl1 =
-                        mapOfAnalyzableSamples1ByDuration.get(duration);
+                        mapOfAnalyzableSamples1ByDuration.get(duration);                
                 List<AnalyzableSamples> asl2 =
-                        mapOfAnalyzableSamples2ByDuration.get(duration);
+                        mapOfAnalyzableSamples2ByDuration.get(duration);                
                 if (asl1 == null || asl2 == null)
                     continue;
-                for (AnalyzableSamples as1 : asl1) {
+                for (AnalyzableSamples as1 : asl1) {                	
                     for (AnalyzableSamples as2 : asl2) {
                         if (as1.isMatch(as2)) {
                             System.out.println(String.format(MATCH,
@@ -52,16 +62,20 @@ public class dam {
                     }
                 }
             }
-
-            Long et = System.currentTimeMillis();
-            System.out.println("time: " + (et - st));
-        } catch (Exception e) {
-            //e.printStackTrace();
-            System.err.println(e.getMessage());
-            System.exit(0);
-        } finally {
-
-        }
+            if(isErrorOccured()) {            	
+            	System.exit(1);
+           	}
+            //Long et = System.currentTimeMillis();
+            //System.out.println("time: " + (et - st));
+        } catch (Exception e) {			
+			String errMessage = e.getMessage();
+			if (errMessage == null || errMessage.length() < 5
+					|| !errMessage.substring(0, 5).equals("ERROR")) {
+				errMessage = "ERROR: An unexpected error has occured";
+			}
+			System.err.println(errMessage);
+			System.exit(1);
+        } 
     }
     
     private static
@@ -71,11 +85,12 @@ public class dam {
                     Map<Integer, List<AnalyzableSamples>> mapOfAnalyzableSamples1ByDuration) {
         int duration;
         for (AudioFile af : listOfFiles1) {
-            duration = af.getDurationInSeconds();
+            duration = af.getDurationInSeconds();            
             List<AnalyzableSamples> asl =
                     mapOfAnalyzableSamples1ByDuration.get(duration);
             AnalyzableSamples as =
                     AnalyzableSamplesFactory.make(af.extractChannelData());
+            as.setBitRate((Integer)af.getHeaderData().get("FMT_SIGNIFICANT_BPS"));
             as.setFileName(af.getShortName());
             if (asl != null) {
                 asl.add(as);

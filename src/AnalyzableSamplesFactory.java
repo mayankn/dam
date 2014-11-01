@@ -34,6 +34,7 @@ public class AnalyzableSamplesFactory {
             AnalyzableSamples {
 
         private static final int DISTANCE_THRESHOLD = 200;
+        private static final int UPPER_DISTANCE_THRESHOLD = 2100;
         private int fftsize;
 
         private AnalyzableSamplesForEqualDurationAudio(double[] samples,
@@ -46,13 +47,18 @@ public class AnalyzableSamplesFactory {
          * {@inheritDoc}
          */
         @Override
-        public boolean isMatch(AnalyzableSamples aS2) {
+        public boolean isMatch(AnalyzableSamples aS2) {   
+        	//System.out.println("fingerprint1--"+this.getFingerprint().length+"fingerprint2--"+aS2.getFingerprint().length);
             if (this.getFingerprint() == null || aS2.getFingerprint() == null
                     || aS2.getFingerprint().length != aS2.getFingerprint().length)
                 throw new RuntimeException("ERROR: Samples not comparable!");
-            
+            int distanceThreshold = DISTANCE_THRESHOLD;
+            if((this.getBitRate() == 8) ^ (aS2.getBitRate() == 8)) {
+            	distanceThreshold = UPPER_DISTANCE_THRESHOLD;
+            }
+            //System.out.println("distanceThreshold"+distanceThreshold);
             if (distance(this.getFingerprint(), aS2.getFingerprint())
-                    < DISTANCE_THRESHOLD) {
+                    < distanceThreshold) {
                 return true;
             }
             return false;
@@ -64,7 +70,7 @@ public class AnalyzableSamplesFactory {
                 dist += (int) Math.abs(fp1[i] - fp2[i]);
             }
             dist = dist * 1000 / (getSampleLength() / fftsize);
-            System.out.println("dist" + dist);
+            //System.out.println("dist" + dist);
             return dist;
         }
     }

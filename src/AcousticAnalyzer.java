@@ -58,7 +58,7 @@ public class AcousticAnalyzer {
     private static double computeRms(double avg, double[] absValues) {
         double temp = 0;
         int len = absValues.length;
-        for (int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {        	
             temp += Math.pow(absValues[i] / avg, 2);
         }
         return Math.sqrt(temp / absValues.length);

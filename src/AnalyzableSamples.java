@@ -19,6 +19,7 @@ public abstract class AnalyzableSamples {
     private String fileName;
     private double[] fingerprint;
     private int slen;
+    private int bitRate;
 
     protected AnalyzableSamples(double[] samples, int fftsize) {
         slen = samples.length;
@@ -159,4 +160,13 @@ public abstract class AnalyzableSamples {
         }
         return brArr;
     }
+
+	public int getBitRate() {
+		return bitRate;
+	}
+
+	public void setBitRate(int bitRate) {
+		this.bitRate = bitRate;
+	}    
+   
 }

@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author: Magesh Ramachandran
@@ -45,25 +46,38 @@ public abstract class AudioFiles {
         return af;
     }
 
-    public static AudioFile[] makeAllAudioFilesInDirectory(String dirName, int paramNum)
-            throws IOException, InterruptedException {
-        File fi = new File(dirName);
-        String[] fileNames;
-        if (fi.isDirectory()) {
-            fileNames = fi.list();
-        } else {
-            throw new RuntimeException(INVALID_PATH_COMMAND_LINE);
-        }
-        if (fileNames == null || fileNames.length == 0) {
-            throw new RuntimeException(NO_FILES_IN_DIRECTORY);
-        }
-        AudioFile[] audioFiles = new AudioFile[fileNames.length];
-        int idx = 0;
-        for (String f : fileNames) {
-            audioFiles[idx++] = AudioFiles.makeAudioFileByExtension(
-                    fi.getAbsolutePath() + File.separator + f, paramNum, true);
-        }
-        return audioFiles;
-    }
+	public static AudioFile[] makeAllAudioFilesInDirectory(String dirName,
+			int paramNum) throws IOException, InterruptedException {
+		File fi = new File(dirName);
+		String[] fileNames;
+		if (fi.isDirectory()) {
+			fileNames = fi.list();
+		} else {
+			throw new RuntimeException(INVALID_PATH_COMMAND_LINE);
+		}
+		if (fileNames == null || fileNames.length == 0) {
+			throw new RuntimeException(NO_FILES_IN_DIRECTORY);
+		}
+		AudioFile[] audioFiles = new AudioFile[fileNames.length];
+		int idx = 0;
+		int errcount = 0;
+		for (String f : fileNames) {
+			try {
+				audioFiles[idx++] = AudioFiles.makeAudioFileByExtension(
+						fi.getAbsolutePath() + File.separator + f, paramNum,
+						true);
+			} catch (Exception e) {
+				idx--;
+				errcount++;
+				System.err.println(e.getMessage());
+				dam.setErrorOccured(true);		
+			}
+		}
+		if(errcount!=0) {
+		audioFiles = Arrays.copyOfRange(audioFiles, 0, audioFiles.length
+				- errcount);		
+		}
+		return audioFiles;
+	}
    
 }
