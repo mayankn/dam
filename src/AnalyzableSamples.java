@@ -4,7 +4,13 @@ import java.util.Map;
 
 /**
  * 
- * @author Magesh
+ * @author: Magesh
+ * @author: Mayank Narashiman
+ * @author: Narendran K.P
+ * 
+ *          </br>Description: This class is to represent audio sample data in a
+ *          format that facilitates perceptual comparison with data from other
+ *          audio files
  * 
  */
 public abstract class AnalyzableSamples {
@@ -23,53 +29,50 @@ public abstract class AnalyzableSamples {
 
     protected AnalyzableSamples(double[] samples, int fftsize) {
         slen = samples.length;
-        int bufferedlen = slen + (fftsize - slen % fftsize);        
+        int bufferedlen = slen + (fftsize - slen % fftsize);
         this.samples = new double[bufferedlen];
         this.fftResult = new double[bufferedlen << 1];
         System.arraycopy(samples, 0, this.samples, 0, slen);
         this.fftsize = fftsize;
-        // Long st = System.currentTimeMillis();
         FFTPreComputor.initialize(fftsize);
         bitReverseArray = FFTPreComputor.getBitReverseIndex();
         preFactors = FFTPreComputor.getPrecomputedFactors();
         exp2Map = FFTPreComputor.getExpMap();
         log2Map = FFTPreComputor.getLogMap();
-        // Long et = System.currentTimeMillis();
-        // System.out.println("ini time: " + (et - st));
         performFFT();
         computeFingerprint();
     }
-    
+
     public int getSampleLength() {
-    	return slen;
+        return slen;
     }
-    
+
     private void computeFingerprint() {
-    	fingerprint = AcousticAnalyzer.extractRmsBasedFingerprint(fftResult,
-                fftsize);
-    	//to free memory    	
-    	exp2Map = null;
-    	bitReverseArray = null;    	
-    	samples = null;
-    	fftResult = null;
-    	preFactors = null;
+        fingerprint =
+                AcousticAnalyzer.extractRmsBasedFingerprint(fftResult, fftsize);
+        // to free memory
+        exp2Map = null;
+        bitReverseArray = null;
+        samples = null;
+        fftResult = null;
+        preFactors = null;
     }
-    
+
     public double[] getFingerprint() {
-    	return this.fingerprint;
+        return this.fingerprint;
     }
 
     public void setFileName(String fname) {
         this.fileName = fname;
     }
-    
-    public String getFileName(){
+
+    public String getFileName() {
         return this.fileName;
     }
+
     /**
-     * To check if two AnalyzableSamples are a match(perceptually)
-     * 
-     * @param aS2
+     * To check if two AnalyzableSamples are a match(perceptually)     * 
+     * @param aS2 - {@AnalyzableSamples} 
      * @return
      */
     public abstract boolean isMatch(AnalyzableSamples aS2);
@@ -79,9 +82,10 @@ public abstract class AnalyzableSamples {
      * @return
      */
     public double[] getSamples() {
-    	if(samples == null) {
-    		throw new IllegalStateException("Error: sample data no longer exists");
-    	}
+        if (samples == null) {
+            throw new IllegalStateException(
+                    "Error: sample data no longer exists");
+        }
         return this.samples;
     }
 
@@ -90,15 +94,16 @@ public abstract class AnalyzableSamples {
      * @return
      */
     public double[] getFFTResult() {
-    	if(fftResult == null) {
-    		throw new IllegalStateException("Error: FFT result data no longer exists");
-    	}
+        if (fftResult == null) {
+            throw new IllegalStateException(
+                    "Error: FFT result data no longer exists");
+        }
         return this.fftResult;
     }
 
     private void performFFT() {
         int slen = samples.length;
-        int resultsize = fftsize << 1;         
+        int resultsize = fftsize << 1;
         for (int i = 0, nexti = 0; i < slen;) {
             nexti = i + fftsize;
             System.arraycopy(performFFT(Arrays.copyOfRange(samples, i, nexti)),
@@ -119,10 +124,11 @@ public abstract class AnalyzableSamples {
      * Non recursive FFT - Translated by Magesh, Mayank, Naren from Pseudocode
      * in Introduction to Algorithms - Third Edition
      * 
-     * @param samples
-     *            -> samples[i][0] - real, samples[i][1] - imaginary
-     * @return double[][] : transform -> transform[i][0] - real, transform[i][1]
-     *         - imaginary
+     * @param samples - samples[i] -> real component, samples[i + fftsize] ->
+     *            imaginary component
+     * @return double[] : ft[i] -> real component, ft[i + fftsize] -> imaginary
+     *         component
+     * 
      */
 
     private double[] performFFT(double[] samples) {
@@ -161,12 +167,12 @@ public abstract class AnalyzableSamples {
         return brArr;
     }
 
-	public int getBitRate() {
-		return bitRate;
-	}
+    public int getBitRate() {
+        return bitRate;
+    }
 
-	public void setBitRate(int bitRate) {
-		this.bitRate = bitRate;
-	}    
-   
+    public void setBitRate(int bitRate) {
+        this.bitRate = bitRate;
+    }
+
 }

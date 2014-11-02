@@ -6,15 +6,15 @@
  */
 public class AnalyzableSamplesFactory {
     private static final int FFT_WINDOW_SIZE = 1024;
+
     /**
      * 
-     * @param isamples
-     * @param fftsize
-     * @return
+     * @param isamples - Array containing audio sample data      
+     * @return {@AnalyzableSamples}
      */
     public static AnalyzableSamples make(double[] isamples) {
         int fftsize = FFT_WINDOW_SIZE;
-        validateInputData(isamples, fftsize);        
+        validateInputData(isamples, fftsize);
         AnalyzableSamples aS =
                 new AnalyzableSamplesForEqualDurationAudio(isamples, fftsize);
         return aS;
@@ -30,6 +30,12 @@ public class AnalyzableSamplesFactory {
         }
     }
 
+    /**
+     * Description - This implementation is used for representing and comparing
+     * equal duration audio samples in way that facilitates perceptual
+     * comparison
+     * 
+     */
     private static class AnalyzableSamplesForEqualDurationAudio extends
             AnalyzableSamples {
 
@@ -47,18 +53,16 @@ public class AnalyzableSamplesFactory {
          * {@inheritDoc}
          */
         @Override
-        public boolean isMatch(AnalyzableSamples aS2) {   
-        	//System.out.println("fingerprint1--"+this.getFingerprint().length+"fingerprint2--"+aS2.getFingerprint().length);
-            if (this.getFingerprint() == null || aS2.getFingerprint() == null
+        public boolean isMatch(AnalyzableSamples aS2) {
+            if (this.getFingerprint() == null
+                    || aS2.getFingerprint() == null
                     || aS2.getFingerprint().length != aS2.getFingerprint().length)
                 throw new RuntimeException("ERROR: Samples not comparable!");
             int distanceThreshold = DISTANCE_THRESHOLD;
-            if((this.getBitRate() == 8) ^ (aS2.getBitRate() == 8)) {
-            	distanceThreshold = UPPER_DISTANCE_THRESHOLD;
+            if ((this.getBitRate() == 8) ^ (aS2.getBitRate() == 8)) {
+                distanceThreshold = UPPER_DISTANCE_THRESHOLD;
             }
-            //System.out.println("distanceThreshold"+distanceThreshold);
-            if (distance(this.getFingerprint(), aS2.getFingerprint())
-                    < distanceThreshold) {
+            if (distance(this.getFingerprint(), aS2.getFingerprint()) < distanceThreshold) {
                 return true;
             }
             return false;
@@ -70,7 +74,6 @@ public class AnalyzableSamplesFactory {
                 dist += (int) Math.abs(fp1[i] - fp2[i]);
             }
             dist = dist * 1000 / (getSampleLength() / fftsize);
-            //System.out.println("dist" + dist);
             return dist;
         }
     }

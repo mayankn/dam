@@ -75,11 +75,11 @@ public class Mp3File extends AudioFile {
                         CONVERTED_FILES_DIRECTORY + File.separator + paramNum
                                 + File.separator + nameWithWavExtension;
                 try {
-                convertedFile = new WavFile(convertedFileName);
-                } catch(Exception e) {
-                	//do nothing
+                    convertedFile = new WavFile(convertedFileName);
+                } catch (Exception e) {
+                    // do nothing
                 }
-            } catch (IOException e) {                
+            } catch (IOException e) {
                 throw new RuntimeException(
                         "ERROR: An unexpected error has occured");
             }
@@ -119,7 +119,7 @@ public class Mp3File extends AudioFile {
     public String getShortName() {
         return shortName;
     }
-    
+
     private void extractHeaderData() {
         String FRAME_SYNC =
                 Integer.toBinaryString(fileData[0] & 0xff)
@@ -138,14 +138,14 @@ public class Mp3File extends AudioFile {
         headerMap.put("COPYRIGHT", ((fileData[3] >> 3) & 1));
         headerMap.put("ORIGINAL", ((fileData[3] >> 2) & 1));
         headerMap.put("EMPHASIS", (fileData[3] & 3));
-       // System.out.println(headerMap);
+        // System.out.println(headerMap);
     }
 
     @Override
     public Map<String, Object> getHeaderData() {
-    	//TODO: to be modified
-    	setInternalRepresentation();
-    	return internalRepresentation.getHeaderData();
+        // TODO: to be modified
+        setInternalRepresentation();
+        return internalRepresentation.getHeaderData();
     }
 
     @Override
@@ -171,7 +171,7 @@ public class Mp3File extends AudioFile {
         setInternalRepresentation();
         return internalRepresentation.getDurationInSeconds();
     }
-  
+
     private void setInternalRepresentation() {
         if (internalRepresentation == null) {
             try {
@@ -181,8 +181,8 @@ public class Mp3File extends AudioFile {
                         "ERROR: an unexpected error has occured");
             }
             internalRepresentation = mp3Decoder.getConvertedFile();
-            if(internalRepresentation == null)
-            	throw new RuntimeException("ERROR: mp3 file format is invalid");
+            if (internalRepresentation == null)
+                throw new RuntimeException("ERROR: mp3 file format is invalid");
             mp3Decoder = null;
             thisConverter = null;
             fileData = null;
