@@ -4,7 +4,6 @@
 
 CLASSES = \
 src/AudioFile.java \
-src/StreamConsumer.java \
 src/AudioFiles.java \
 src/WavFile.java \
 src/Mp3File.java \

@@ -6,18 +6,16 @@ import java.util.Arrays;
  * @author: Narendran K.P
  * Description: This Class contains static methods to extract audio fingerprint
  * for every frame of the given frequency domain audio data.
- * 
  */
 public class AcousticAnalyzer {
     /**
-     * 
-     * @param audioSamples
-     *            : Complex number representing amplitude and phase in frequency
-     *            domain, where audioSamples[i][0] -> Real and
-     *            audioSamples[i][1] -> Imaginary
-     * @param frameSize
-     *            : The frame size in terms of number of samples for which the
-     *            fingerprint has to be extracted
+     * @param audioSamples : Complex number representing amplitude and phase
+     *                     in frequency
+     *                     domain, where audioSamples[i][0] -> Real and
+     *                     audioSamples[i][1] -> Imaginary
+     * @param frameSize    : The frame size in terms of number of samples for
+     *                     which the
+     *                     fingerprint has to be extracted
      * @return
      */
     public static double[] extractRmsBasedFingerprint(
@@ -27,15 +25,15 @@ public class AcousticAnalyzer {
         int samplesLength = audioSamples.length;
         int halfFrameSize = (frameSize >> 1);
         int quarterFrameSize = (halfFrameSize >> 1);
-        int threeQuarterFrameSize = halfFrameSize+quarterFrameSize;
+        int threeQuarterFrameSize = halfFrameSize + quarterFrameSize;
         int i = 0;
         double sum = 0;
         double[] rmsValues = new double[samplesLength / frameSize];
         double[] absValues = new double[samplesLength];
-        for (int j = 0; j < samplesLength; j++) {            
+        for (int j = 0; j < samplesLength; j++) {
             absValues[j] =
                     Math.pow(audioSamples[j], 2)
-                            + Math.pow(audioSamples[j+halfFrameSize], 2);
+                            + Math.pow(audioSamples[j + halfFrameSize], 2);
             sum += absValues[j];
 
             if (j % quarterFrameSize == 0 && j != 0) {
@@ -50,8 +48,7 @@ public class AcousticAnalyzer {
     }
 
     /**
-     * 
-     * @param avg : average value for Normalization 
+     * @param avg       : average value for Normalization
      * @param absValues : absolute value representing amplitude of a sample
      * @return
      */

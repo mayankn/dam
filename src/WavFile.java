@@ -7,18 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
- * 
  */
 public class WavFile extends AudioFile {
     private byte[] fileData;
     private String fileName;
     private String shortName;
     private static final int CANONICAL_SAMPLING_RATE = 44100;
-    private Map<String, Object> headerMap = new HashMap<String, Object>();    
+    private Map<String, Object> headerMap = new HashMap<String, Object>();
 
     public WavFile(String fName) throws IOException {
         this.fileName = fName;
@@ -37,35 +35,62 @@ public class WavFile extends AudioFile {
         }
         extractHeaderData();
     }
-    
-	private double[] convertToCanonicalForm(double[] data) {
-		int dataLength = data.length;
-		int sampleRate = (Integer) headerMap.get("FMT_SAMPLE_RATE");
-		int duplicatingFactor = (CANONICAL_SAMPLING_RATE / sampleRate);
-		if (duplicatingFactor == 1) {
-			return data;
-		}		
-		double[] newFileSamples = new double[dataLength * duplicatingFactor];
-		for (int i = 0; i < dataLength - 1; i++) {
-			double tmp = data[i];
-			int j = i * duplicatingFactor;
-			double offset = (data[i + 1] - tmp);
-			switch (duplicatingFactor) {
-			case 2:
-				newFileSamples[j] = tmp;
-				// newFileSamples[j + 1] = tmp;
-				// this is for linear interpolation (this works too)
-				newFileSamples[j + 1] = (tmp + offset / 2);
-				break;
-			case 4:
-				newFileSamples[j] = tmp;
-				newFileSamples[j + 1] = tmp + (offset / 4);
-				newFileSamples[j + 2] = tmp + (offset * (2 / 4));
-				newFileSamples[j + 3] = tmp + (offset * (3 / 4));
-				break;
-			}
-		}
-		return newFileSamples;
+
+    private double[] convertToCanonicalForm(double[] data) {
+        int dataLength = data.length;
+        int sampleRate = (Integer) headerMap.get("FMT_SAMPLE_RATE");
+        double duplicatingFactorOrig =
+                (double) CANONICAL_SAMPLING_RATE / sampleRate;
+        int duplicatingFactor = (int) duplicatingFactorOrig;
+        if (duplicatingFactorOrig != 0.91875
+                && duplicatingFactorOrig != duplicatingFactor) {
+            throw new RuntimeException("ERROR: Unsupported sampling rate");
+        }
+
+        if (duplicatingFactor == 1) {
+            return data;
+        }
+        double[] newFileSamples;
+        if (duplicatingFactorOrig == 0.91875) {
+            int newlen = (int) (dataLength * duplicatingFactorOrig);
+            newFileSamples = new double[newlen];
+            for (int i = 0; i < newlen; i++) {
+                double currentPosition = i / duplicatingFactorOrig;
+                int nearestLeftPosition = (int) currentPosition;
+                int nearestRightPosition = nearestLeftPosition + 1;
+                if (nearestRightPosition >= data.length) {
+                    nearestRightPosition = data.length - 1;
+                }
+                double slope =
+                        (data[nearestRightPosition] - data[nearestLeftPosition]);
+                double positionFromLeft = currentPosition - nearestLeftPosition;
+                newFileSamples[i] =
+                        ((slope * positionFromLeft) + data[nearestLeftPosition]);
+            }
+        } else {
+            newFileSamples = new double[dataLength * duplicatingFactor];
+            for (int i = 0; i < dataLength - 1; i++) {
+                double tmp = data[i];
+                int j = i * duplicatingFactor;
+                double offset = (data[i + 1] - tmp);
+                switch (duplicatingFactor) {
+                    case 2:
+                        newFileSamples[j] = tmp;
+                        newFileSamples[j + 1] = (tmp + offset / 2);
+                        break;
+                    case 4:
+                        newFileSamples[j] = tmp;
+                        newFileSamples[j + 1] = tmp + (offset / 4);
+                        newFileSamples[j + 2] = tmp + (offset * (2 / 4));
+                        newFileSamples[j + 3] = tmp + (offset * (3 / 4));
+                        break;
+                    default:
+                        throw new RuntimeException(
+                                "ERROR: Unsupported sampling rate");
+                }
+            }
+        }
+        return newFileSamples;
     }
 
     /**
@@ -132,7 +157,7 @@ public class WavFile extends AudioFile {
         int numChannels = (Integer) headerMap.get("FMT_NO_OF_CHANNELS");
         int bpsPerChannel = (Integer) headerMap.get("FMT_SIGNIFICANT_BPS") / 8;
         int bps = bpsPerChannel * numChannels;
-        int channelDataLength = ((Integer) headerMap.get("DATA_DWORD")) / bps;        
+        int channelDataLength = ((Integer) headerMap.get("DATA_DWORD")) / bps;
         boolean isSingleChannel = (numChannels == 1);
         double[] avg = new double[channelDataLength];
         int idx = 0;
@@ -142,8 +167,8 @@ public class WavFile extends AudioFile {
         for (int i = 44; i < fileData.length; i = i + bpsPerChannel) {
             System.arraycopy(fileData, i - bpsPerChannel, t, 0, bpsPerChannel);
 
-            ByteBuffer wrapped =
-                    ByteBuffer.wrap(t).order(ByteOrder.LITTLE_ENDIAN);
+            ByteBuffer wrapped = ByteBuffer.wrap(t).order(
+                    ByteOrder.LITTLE_ENDIAN);
             int val = 0;
 
             if (bpsPerChannel == 2) {
@@ -166,7 +191,7 @@ public class WavFile extends AudioFile {
                 left = val;
                 avg[idx++] = (right + left) / 2;
             }
-        }                  
+        }
         return convertToCanonicalForm(avg);
     }
 
@@ -179,7 +204,8 @@ public class WavFile extends AudioFile {
         if (!headerMap.get("RIFF_TYPE").toString().equalsIgnoreCase("WAVE")) {
             return false;
         }
-        if (!headerMap.get("DATA_CHUNK_ID").toString().equalsIgnoreCase("data")) {
+        if (!headerMap.get("DATA_CHUNK_ID").toString()
+                .equalsIgnoreCase("data")) {
             return false;
         }
         if ((Integer) headerMap.get("FMT_NO_OF_CHANNELS") > 2) {
@@ -198,9 +224,8 @@ public class WavFile extends AudioFile {
 
     /**
      * To validate if the given file name is valid and has .wav extension
-     * 
-     * @param fileName
-     *            - file name
+     *
+     * @param fileName - file name
      * @return - true if the given file name is valid, false otherwise
      */
     public static boolean isFileExtensionValid(String fileName) {

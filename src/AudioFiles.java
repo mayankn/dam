@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author: Magesh Ramachandran
@@ -15,7 +16,7 @@ public abstract class AudioFiles {
             "ERROR: invalid command line, the given path is not a directory";
     private static String NO_FILES_IN_DIRECTORY =
             "ERROR: No files in the given directory";
-   
+
     // TODO: This is WORK IN PROGRESS
     public static AudioFile[] makeAudioFilesFromArg(String flag,
                                                     String fpath,
@@ -31,12 +32,14 @@ public abstract class AudioFiles {
         return listOfFiles2;
     }
 
-    public static AudioFile makeAudioFileByExtension(String fileName, int paramNum, boolean isDirectory)
+    public static AudioFile makeAudioFileByExtension(String fileName,
+                                                     int paramNum,
+                                                     boolean isDirectory)
             throws IOException, InterruptedException {
         AudioFile.FILE_TYPE ftype = AudioFile.getFileTypeFromName(fileName);
         AudioFile af = null;
         if (ftype == AudioFile.FILE_TYPE.MP3) {
-        	af = new Mp3File(fileName, isDirectory, paramNum);        
+            af = new Mp3File(fileName, isDirectory, paramNum);
         } else if (ftype == AudioFile.FILE_TYPE.WAV) {
             af = new WavFile(fileName);
         } else {
@@ -45,7 +48,8 @@ public abstract class AudioFiles {
         return af;
     }
 
-    public static AudioFile[] makeAllAudioFilesInDirectory(String dirName, int paramNum)
+    public static AudioFile[] makeAllAudioFilesInDirectory(String dirName,
+                                                           int paramNum)
             throws IOException, InterruptedException {
         File fi = new File(dirName);
         String[] fileNames;
@@ -59,11 +63,24 @@ public abstract class AudioFiles {
         }
         AudioFile[] audioFiles = new AudioFile[fileNames.length];
         int idx = 0;
+        int errcount = 0;
         for (String f : fileNames) {
-            audioFiles[idx++] = AudioFiles.makeAudioFileByExtension(
-                    fi.getAbsolutePath() + File.separator + f, paramNum, true);
+            try {
+                audioFiles[idx++] = AudioFiles.makeAudioFileByExtension(
+                        fi.getAbsolutePath() + File.separator + f, paramNum,
+                        true);
+            } catch (Exception e) {
+                idx--;
+                errcount++;
+                System.err.println(e.getMessage());
+                dam.setErrorOccured(true);
+            }
+        }
+        if (errcount != 0) {
+            audioFiles = Arrays.copyOfRange(audioFiles, 0, audioFiles.length
+                    - errcount);
         }
         return audioFiles;
     }
-   
+
 }

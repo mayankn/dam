@@ -33,5 +33,7 @@ mkdir /tmp/dam-mmn/1
 mkdir /tmp/dam-mmn/2
 # execute java program
 java -cp out dam $@
+exitVal=`echo $?`
 # clear out all tmp files
 rm -rf /tmp/dam-mmn/
+exit $exitVal

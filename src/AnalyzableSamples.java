@@ -3,9 +3,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
  * @author Magesh
- * 
  */
 public abstract class AnalyzableSamples {
     private static Map<Integer, Integer> log2Map =
@@ -19,10 +17,11 @@ public abstract class AnalyzableSamples {
     private String fileName;
     private double[] fingerprint;
     private int slen;
+    private int bitRate;
 
     protected AnalyzableSamples(double[] samples, int fftsize) {
         slen = samples.length;
-        int bufferedlen = slen + (fftsize - slen % fftsize);        
+        int bufferedlen = slen + (fftsize - slen % fftsize);
         this.samples = new double[bufferedlen];
         this.fftResult = new double[bufferedlen << 1];
         System.arraycopy(samples, 0, this.samples, 0, slen);
@@ -38,67 +37,68 @@ public abstract class AnalyzableSamples {
         performFFT();
         computeFingerprint();
     }
-    
+
     public int getSampleLength() {
-    	return slen;
+        return slen;
     }
-    
+
     private void computeFingerprint() {
-    	fingerprint = AcousticAnalyzer.extractRmsBasedFingerprint(fftResult,
+        fingerprint = AcousticAnalyzer.extractRmsBasedFingerprint(fftResult,
                 fftsize);
-    	//to free memory    	
-    	exp2Map = null;
-    	bitReverseArray = null;    	
-    	samples = null;
-    	fftResult = null;
-    	preFactors = null;
+        //to free memory
+        exp2Map = null;
+        bitReverseArray = null;
+        samples = null;
+        fftResult = null;
+        preFactors = null;
     }
-    
+
     public double[] getFingerprint() {
-    	return this.fingerprint;
+        return this.fingerprint;
     }
 
     public void setFileName(String fname) {
         this.fileName = fname;
     }
-    
-    public String getFileName(){
+
+    public String getFileName() {
         return this.fileName;
     }
+
     /**
      * To check if two AnalyzableSamples are a match(perceptually)
-     * 
+     *
      * @param aS2
      * @return
      */
     public abstract boolean isMatch(AnalyzableSamples aS2);
 
     /**
-     * 
      * @return
      */
     public double[] getSamples() {
-    	if(samples == null) {
-    		throw new IllegalStateException("Error: sample data no longer exists");
-    	}
+        if (samples == null) {
+            throw new IllegalStateException(
+                    "Error: sample data no longer exists");
+        }
         return this.samples;
     }
 
     /**
-     * 
      * @return
      */
     public double[] getFFTResult() {
-    	if(fftResult == null) {
-    		throw new IllegalStateException("Error: FFT result data no longer exists");
-    	}
+        if (fftResult == null) {
+            throw new IllegalStateException(
+                    "Error: FFT result data no longer exists");
+        }
         return this.fftResult;
     }
 
     private void performFFT() {
         int slen = samples.length;
-        int resultsize = fftsize << 1;         
-        for (int i = 0, nexti = 0; i < slen;) {
+        int resultsize = fftsize << 1;
+        for (int i = 0, nexti = 0; i < slen; ) {
             nexti = i + fftsize;
             System.arraycopy(performFFT(Arrays.copyOfRange(samples, i, nexti)),
                     0, fftResult, i << 1, resultsize);
@@ -117,11 +117,10 @@ public abstract class AnalyzableSamples {
     /**
      * Non recursive FFT - Translated by Magesh, Mayank, Naren from Pseudocode
      * in Introduction to Algorithms - Third Edition
-     * 
-     * @param samples
-     *            -> samples[i][0] - real, samples[i][1] - imaginary
+     *
+     * @param samples -> samples[i][0] - real, samples[i][1] - imaginary
      * @return double[][] : transform -> transform[i][0] - real, transform[i][1]
-     *         - imaginary
+     * - imaginary
      */
 
     private double[] performFFT(double[] samples) {
@@ -159,4 +158,13 @@ public abstract class AnalyzableSamples {
         }
         return brArr;
     }
+
+    public int getBitRate() {
+        return bitRate;
+    }
+
+    public void setBitRate(int bitRate) {
+        this.bitRate = bitRate;
+    }
+
 }
