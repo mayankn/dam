@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
+ * 
  */
 public class WavFile extends AudioFile {
     private byte[] fileData;
@@ -74,19 +76,19 @@ public class WavFile extends AudioFile {
                 int j = i * duplicatingFactor;
                 double offset = (data[i + 1] - tmp);
                 switch (duplicatingFactor) {
-                    case 2:
-                        newFileSamples[j] = tmp;
-                        newFileSamples[j + 1] = (tmp + offset / 2);
-                        break;
-                    case 4:
-                        newFileSamples[j] = tmp;
-                        newFileSamples[j + 1] = tmp + (offset / 4);
-                        newFileSamples[j + 2] = tmp + (offset * (2 / 4));
-                        newFileSamples[j + 3] = tmp + (offset * (3 / 4));
-                        break;
-                    default:
-                        throw new RuntimeException(
-                                "ERROR: Unsupported sampling rate");
+                case 2:
+                    newFileSamples[j] = tmp;
+                    newFileSamples[j + 1] = (tmp + offset / 2);
+                    break;
+                case 4:
+                    newFileSamples[j] = tmp;
+                    newFileSamples[j + 1] = tmp + (offset / 4);
+                    newFileSamples[j + 2] = tmp + (offset * (2 / 4));
+                    newFileSamples[j + 3] = tmp + (offset * (3 / 4));
+                    break;
+                default:
+                    throw new RuntimeException(
+                            "ERROR: Unsupported sampling rate");
                 }
             }
         }
@@ -167,8 +169,8 @@ public class WavFile extends AudioFile {
         for (int i = 44; i < fileData.length; i = i + bpsPerChannel) {
             System.arraycopy(fileData, i - bpsPerChannel, t, 0, bpsPerChannel);
 
-            ByteBuffer wrapped = ByteBuffer.wrap(t).order(
-                    ByteOrder.LITTLE_ENDIAN);
+            ByteBuffer wrapped =
+                    ByteBuffer.wrap(t).order(ByteOrder.LITTLE_ENDIAN);
             int val = 0;
 
             if (bpsPerChannel == 2) {
@@ -191,7 +193,7 @@ public class WavFile extends AudioFile {
                 left = val;
                 avg[idx++] = (right + left) / 2;
             }
-        }
+        }                  
         return convertToCanonicalForm(avg);
     }
 
@@ -204,8 +206,7 @@ public class WavFile extends AudioFile {
         if (!headerMap.get("RIFF_TYPE").toString().equalsIgnoreCase("WAVE")) {
             return false;
         }
-        if (!headerMap.get("DATA_CHUNK_ID").toString()
-                .equalsIgnoreCase("data")) {
+        if (!headerMap.get("DATA_CHUNK_ID").toString().equalsIgnoreCase("data")) {
             return false;
         }
         if ((Integer) headerMap.get("FMT_NO_OF_CHANNELS") > 2) {
@@ -224,7 +225,7 @@ public class WavFile extends AudioFile {
 
     /**
      * To validate if the given file name is valid and has .wav extension
-     *
+     * 
      * @param fileName - file name
      * @return - true if the given file name is valid, false otherwise
      */

@@ -3,60 +3,61 @@ import java.nio.ByteOrder;
 import java.util.Map;
 
 /**
+ * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
+ * 
  */
 public abstract class AudioFile {
     public enum FILE_TYPE {
         MP3, WAV
-    }
-
-    ;
+    };
 
     public static String INVALID_FILE_PATH =
             "ERROR: Incorrect file path, file %s was not found";
 
     /**
      * To extract header data from the audio file
-     *
+     * 
      * @return - Map containing the key-value pair of header info, where the
-     * value is an Object representing a String or an Integer
+     *         value is an Object representing a String or an Integer
      */
     public abstract Map<String, Object> getHeaderData();
 
     /**
      * To compare if the duration of this file and the given AudioFile af2 are
      * the same
-     *
-     * @param af2 - AudioFile for which the comparison has to be made against
+     * 
+     * @param af2
+     *            - AudioFile for which the comparison has to be made against
      * @return - true if durations are same, false otherwise
      */
     public abstract boolean areFileDurationsTheSame(AudioFile af2);
 
     /**
      * To extract the audio sample data from the audio file
-     *
+     * 
      * @return - array containing average amplitude for all samples of left +
-     * right channels for 2 channel audio, or samples of unmodified
-     * amplitude for single channel audio
+     *         right channels for 2 channel audio, or samples of unmodified
+     *         amplitude for single channel audio
      */
     public abstract double[] extractChannelData();
 
     /**
      * To validate if the audio file is of the correct format as specified by
      * the subclass
-     *
+     * 
      * @return - true if the format is valid, false otherwise
      */
     public abstract boolean isAudioFileFormatValid();
 
     /**
      * @return - Returns the short name of the audio file along with the file
-     * extension
+     *         extension
      */
     public abstract String getShortName();
-
+    
     public abstract int getDurationInSeconds();
 
     protected int readIntChunks(byte[] b, int fromidx, int toidx) {
@@ -88,7 +89,7 @@ public abstract class AudioFile {
                 ".mp3")) {
             return FILE_TYPE.MP3;
         } else {
-            throw new RuntimeException("ERROR: Invalid file format" + fileName);
+            throw new RuntimeException("ERROR: Invalid file format"+ fileName);
         }
     }
 

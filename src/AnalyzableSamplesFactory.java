@@ -2,14 +2,15 @@
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P Description:
+ * 
  */
 public class AnalyzableSamplesFactory {
     private static final int FFT_WINDOW_SIZE = 1024;
 
     /**
-     * @param isamples
-     * @param fftsize
-     * @return
+     * 
+     * @param isamples - Array containing audio sample data      
+     * @return {@AnalyzableSamples}
      */
     public static AnalyzableSamples make(double[] isamples) {
         int fftsize = FFT_WINDOW_SIZE;
@@ -29,6 +30,12 @@ public class AnalyzableSamplesFactory {
         }
     }
 
+    /**
+     * Description - This implementation is used for representing and comparing
+     * equal duration audio samples in way that facilitates perceptual
+     * comparison
+     * 
+     */
     private static class AnalyzableSamplesForEqualDurationAudio extends
             AnalyzableSamples {
 
@@ -37,7 +44,7 @@ public class AnalyzableSamplesFactory {
         private int fftsize;
 
         private AnalyzableSamplesForEqualDurationAudio(double[] samples,
-                                                       int fftsize) {
+                int fftsize) {
             super(samples, fftsize);
             this.fftsize = fftsize;
         }
@@ -55,9 +62,7 @@ public class AnalyzableSamplesFactory {
             if ((this.getBitRate() == 8) ^ (aS2.getBitRate() == 8)) {
                 distanceThreshold = UPPER_DISTANCE_THRESHOLD;
             }
-            //System.out.println("distanceThreshold"+distanceThreshold);
-            if (distance(this.getFingerprint(), aS2.getFingerprint())
-                    < distanceThreshold) {
+            if (distance(this.getFingerprint(), aS2.getFingerprint()) < distanceThreshold) {
                 return true;
             }
             return false;
@@ -69,7 +74,6 @@ public class AnalyzableSamplesFactory {
                 dist += (int) Math.abs(fp1[i] - fp2[i]);
             }
             dist = dist * 1000 / (getSampleLength() / fftsize);
-            //System.out.println("dist" + dist);
             return dist;
         }
     }

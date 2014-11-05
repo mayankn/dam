@@ -3,7 +3,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Magesh
+ * 
+ * @author: Magesh
+ * @author: Mayank Narashiman
+ * @author: Narendran K.P
+ * 
+ *          Description: This class is to represent audio sample data in a
+ *          format that facilitates perceptual comparison with data from other
+ *          audio files
+ * 
  */
 public abstract class AnalyzableSamples {
     private static Map<Integer, Integer> log2Map =
@@ -26,14 +34,11 @@ public abstract class AnalyzableSamples {
         this.fftResult = new double[bufferedlen << 1];
         System.arraycopy(samples, 0, this.samples, 0, slen);
         this.fftsize = fftsize;
-        // Long st = System.currentTimeMillis();
         FFTPreComputor.initialize(fftsize);
         bitReverseArray = FFTPreComputor.getBitReverseIndex();
         preFactors = FFTPreComputor.getPrecomputedFactors();
         exp2Map = FFTPreComputor.getExpMap();
         log2Map = FFTPreComputor.getLogMap();
-        // Long et = System.currentTimeMillis();
-        // System.out.println("ini time: " + (et - st));
         performFFT();
         computeFingerprint();
     }
@@ -43,9 +48,9 @@ public abstract class AnalyzableSamples {
     }
 
     private void computeFingerprint() {
-        fingerprint = AcousticAnalyzer.extractRmsBasedFingerprint(fftResult,
-                fftsize);
-        //to free memory
+        fingerprint =
+                AcousticAnalyzer.extractRmsBasedFingerprint(fftResult, fftsize);
+        // to free memory
         exp2Map = null;
         bitReverseArray = null;
         samples = null;
@@ -66,14 +71,14 @@ public abstract class AnalyzableSamples {
     }
 
     /**
-     * To check if two AnalyzableSamples are a match(perceptually)
-     *
-     * @param aS2
+     * To check if two AnalyzableSamples are a match(perceptually)     * 
+     * @param aS2 - {@AnalyzableSamples} 
      * @return
      */
     public abstract boolean isMatch(AnalyzableSamples aS2);
 
     /**
+     * 
      * @return
      */
     public double[] getSamples() {
@@ -85,6 +90,7 @@ public abstract class AnalyzableSamples {
     }
 
     /**
+     * 
      * @return
      */
     public double[] getFFTResult() {
@@ -98,7 +104,7 @@ public abstract class AnalyzableSamples {
     private void performFFT() {
         int slen = samples.length;
         int resultsize = fftsize << 1;
-        for (int i = 0, nexti = 0; i < slen; ) {
+        for (int i = 0, nexti = 0; i < slen;) {
             nexti = i + fftsize;
             System.arraycopy(performFFT(Arrays.copyOfRange(samples, i, nexti)),
                     0, fftResult, i << 1, resultsize);
@@ -117,10 +123,12 @@ public abstract class AnalyzableSamples {
     /**
      * Non recursive FFT - Translated by Magesh, Mayank, Naren from Pseudocode
      * in Introduction to Algorithms - Third Edition
-     *
-     * @param samples -> samples[i][0] - real, samples[i][1] - imaginary
-     * @return double[][] : transform -> transform[i][0] - real, transform[i][1]
-     * - imaginary
+     * 
+     * @param samples - samples[i] -> real component, samples[i + fftsize] ->
+     *            imaginary component
+     * @return double[] : ft[i] -> real component, ft[i + fftsize] -> imaginary
+     *         component
+     * 
      */
 
     private double[] performFFT(double[] samples) {
