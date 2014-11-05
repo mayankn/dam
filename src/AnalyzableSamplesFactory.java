@@ -62,7 +62,8 @@ public class AnalyzableSamplesFactory {
             if ((this.getBitRate() == 8) ^ (aS2.getBitRate() == 8)) {
                 distanceThreshold = UPPER_DISTANCE_THRESHOLD;
             }
-            if (distance(this.getFingerprint(), aS2.getFingerprint()) < distanceThreshold) {
+            if (distance(this.getFingerprint(), aS2.getFingerprint()) <
+                    distanceThreshold) {
                 return true;
             }
             return false;

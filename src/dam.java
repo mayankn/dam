@@ -38,9 +38,11 @@ public class dam {
                     AudioFiles.makeAudioFilesFromArg(args[0], args[1], 1);
             AudioFile[] listOfFiles2 =
                     AudioFiles.makeAudioFilesFromArg(args[2], args[3], 2);
-            Map<Integer, List<AnalyzableSamples>> mapOfAnalyzableSamples1ByDuration =
+            Map<Integer, List<AnalyzableSamples>>
+                    mapOfAnalyzableSamples1ByDuration =
                     new HashMap<Integer, List<AnalyzableSamples>>();
-            Map<Integer, List<AnalyzableSamples>> mapOfAnalyzableSamples2ByDuration =
+            Map<Integer, List<AnalyzableSamples>>
+                    mapOfAnalyzableSamples2ByDuration =
                     new HashMap<Integer, List<AnalyzableSamples>>();
             prepareMapOfAnalyzableSamplesByDuration(listOfFiles1,
                     mapOfAnalyzableSamples1ByDuration);
@@ -83,7 +85,8 @@ public class dam {
             void
             prepareMapOfAnalyzableSamplesByDuration(
                     AudioFile[] listOfFiles1,
-                    Map<Integer, List<AnalyzableSamples>> mapOfAnalyzableSamples1ByDuration) {
+                    Map<Integer, List<AnalyzableSamples>>
+                            mapOfAnalyzableSamples1ByDuration) {
         int duration;
         for (AudioFile af : listOfFiles1) {
             duration = af.getDurationInSeconds();
