@@ -15,11 +15,11 @@ public abstract class AudioFiles {
             "ERROR: invalid command line, the given path is not a directory";
     private static String NO_FILES_IN_DIRECTORY =
             "ERROR: No files in the given directory";
-   
-    public static AudioFile[] makeAudioFilesFromArg(String flag,
-                                                    String fpath,
-                                                    int paramNum)
-            throws IOException, InterruptedException {
+
+    public static AudioFile[] makeAudioFilesFromArg(
+            String flag,
+            String fpath,
+            int paramNum) throws IOException, InterruptedException {
         AudioFile[] listOfFiles2;
         if ("-f".equals(flag)) {
             listOfFiles2 =

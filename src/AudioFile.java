@@ -29,8 +29,7 @@ public abstract class AudioFile {
      * To compare if the duration of this file and the given AudioFile af2 are
      * the same
      * 
-     * @param af2
-     *            - AudioFile for which the comparison has to be made against
+     * @param af2 - AudioFile for which the comparison has to be made against
      * @return - true if durations are same, false otherwise
      */
     public abstract boolean areFileDurationsTheSame(AudioFile af2);
@@ -57,7 +56,7 @@ public abstract class AudioFile {
      *         extension
      */
     public abstract String getShortName();
-    
+
     public abstract int getDurationInSeconds();
 
     protected int readIntChunks(byte[] b, int fromidx, int toidx) {
@@ -89,7 +88,7 @@ public abstract class AudioFile {
                 ".mp3")) {
             return FILE_TYPE.MP3;
         } else {
-            throw new RuntimeException("ERROR: Invalid file format"+ fileName);
+            throw new RuntimeException("ERROR: Invalid file format" + fileName);
         }
     }
 

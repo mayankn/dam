@@ -2,7 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FFTPreComputor {
-    private static final int PS = 17;
+    private static final int PS = 17; 
     private static double[] preFactors;
     private static int[] bitReverseArray;
     private static double[] tfactor;
@@ -11,9 +11,8 @@ public class FFTPreComputor {
     private static final double twoPi = 2 * Math.PI;
     private static Map<Integer, Integer> log2Map =
             new HashMap<Integer, Integer>(17);
-
     static {
-        tfactor = new double[PS << 1];
+        tfactor = new double[PS<<1];
         intMaps(1, 0);
         intMaps(2, 1);
         intMaps(4, 2);
@@ -41,7 +40,7 @@ public class FFTPreComputor {
         tfactor[val + PS] = Math.sin(c);
     }
 
-    static void initialize(int fftsize) {
+    static void initialize(int fftsize) {    	
         if (fftsize != size) {
             size = fftsize;
             preCompute();
@@ -50,13 +49,13 @@ public class FFTPreComputor {
     }
 
     private static void preCompute() {
-        try {
+        try {            
             int depth = log2Map.get(size);
             int ti = (size * depth);
             preFactors = new double[ti];
             int htlen = ti >> 1;
             int i = 0;
-            int ht = tfactor.length >> 1;
+            int ht = tfactor.length>>1;
             double wr, wi, w0r, w0i, w0rt, w0it;
             for (int s = 1; s <= depth; s++) {
                 int m = exp2Map[s];

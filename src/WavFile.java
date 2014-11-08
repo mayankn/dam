@@ -193,7 +193,7 @@ public class WavFile extends AudioFile {
                 left = val;
                 avg[idx++] = (right + left) / 2;
             }
-        }                  
+        }
         return convertToCanonicalForm(avg);
     }
 

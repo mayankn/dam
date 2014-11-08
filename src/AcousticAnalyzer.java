@@ -5,7 +5,7 @@ import java.util.Arrays;
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- *          Description: This Class contains static methods to extract
+ *          </br> Description: This Class contains static methods to extract
  *          audio finger print for every frame of the given frequency domain
  *          audio data.
  * 

@@ -8,7 +8,7 @@ import java.util.Map;
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- *          Description: This class is to represent audio sample data in a
+ *          </br>Description: This class is to represent audio sample data in a
  *          format that facilitates perceptual comparison with data from other
  *          audio files
  * 
@@ -76,6 +76,17 @@ public abstract class AnalyzableSamples {
      * @return
      */
     public abstract boolean isMatch(AnalyzableSamples aS2);
+    
+    /**
+     * Returns  the offset in seconds of the beginning of the matching segment
+     * within the first file, along with the
+     * offset in seconds of the beginning of the matching segment
+     * within the second file. If there is no match, returns a null
+     * @param aS2
+     * @return
+     */
+    public abstract int[] getMatchPositionInSeconds(AnalyzableSamples aS2);
+    
 
     /**
      * 
