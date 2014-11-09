@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +24,7 @@ public abstract class AnalyzableSamples {
     private double[] fftResult;
     double[] preFactors;
     private String fileName;
-    private double[] fingerprint;
+    private Map<Integer, List<Integer>> fingerprint;
     private int slen;
     private int bitRate;
 
@@ -40,7 +41,7 @@ public abstract class AnalyzableSamples {
         exp2Map = FFTPreComputor.getExpMap();
         log2Map = FFTPreComputor.getLogMap();
         performFFT();
-        computeFingerprint();
+        computeFingerprint();        
     }
 
     public int getSampleLength() {
@@ -49,7 +50,7 @@ public abstract class AnalyzableSamples {
 
     private void computeFingerprint() {
         fingerprint =
-                AcousticAnalyzer.extractRmsBasedFingerprint(fftResult, fftsize);
+                AcousticAnalyzer.extractFrequencyBasedFingerprint(fftResult, fftsize);
         // to free memory
         exp2Map = null;
         bitReverseArray = null;
@@ -58,7 +59,7 @@ public abstract class AnalyzableSamples {
         preFactors = null;
     }
 
-    public double[] getFingerprint() {
+    public Map<Integer, List<Integer>> getFingerprint() {
         return this.fingerprint;
     }
 

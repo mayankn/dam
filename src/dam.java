@@ -55,6 +55,7 @@ public class dam {
             // Long et = System.currentTimeMillis();
             // System.out.println("time: " + (et - st));
         } catch (Exception e) {
+            e.printStackTrace();
             String errMessage = e.getMessage();
             if (errMessage == null || errMessage.length() < 5
                     || !errMessage.substring(0, 5).equals("ERROR")) {
