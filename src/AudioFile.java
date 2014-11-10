@@ -88,7 +88,8 @@ public abstract class AudioFile {
                 ".mp3")) {
             return FILE_TYPE.MP3;
         } else {
-            throw new RuntimeException("ERROR: Invalid file format" + fileName);
+            throw new RuntimeException("ERROR: Invalid file format " +
+                    fileName);
         }
     }
 

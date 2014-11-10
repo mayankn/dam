@@ -16,7 +16,7 @@ import java.util.List;
 public class dam {
 
     private static String INVALID_COMMAND_ERROR = "ERROR: Invalid command line";
-    private static String MATCH = "MATCH %s %s %d %d";
+    private static String MATCH = "MATCH %s %s %.1f %.1f";
     private static int FRAGMENT_SIZE_TO_MATCH = 5;
 
     public static boolean errorOccured;
@@ -42,7 +42,7 @@ public class dam {
             
             for(AnalyzableSamples aS1 : analyzableSamples1) {
                 for(AnalyzableSamples aS2 : analyzableSamples2) {
-                    int[] matchPosition = aS1.getMatchPositionInSeconds(aS2);
+                    double[] matchPosition = aS1.getMatchPositionInSeconds(aS2);
                     if (matchPosition != null) {
                         System.out.println(String.format(MATCH,
                                 aS1.getFileName(), aS2.getFileName(), matchPosition[0], matchPosition[1]));
@@ -55,7 +55,7 @@ public class dam {
             // Long et = System.currentTimeMillis();
             // System.out.println("time: " + (et - st));
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             String errMessage = e.getMessage();
             if (errMessage == null || errMessage.length() < 5
                     || !errMessage.substring(0, 5).equals("ERROR")) {

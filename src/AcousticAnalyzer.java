@@ -92,7 +92,8 @@ public class AcousticAnalyzer {
             absValue =
                     Math.pow(audioSamples[j], 2)
                             + Math.pow(audioSamples[j + halfFrameSize], 2);
-            if(freqcounter!=512 && (freqcounter<5 || freqcounter>50)) {                
+            if(freqcounter!=512 && (freqcounter<1 || freqcounter>500)) {
+
                 freqcounter++;
                 continue;
             }            
@@ -117,7 +118,7 @@ public class AcousticAnalyzer {
             if (j % quarterFrameSize == 0 && j != 0) {
                 // System.out.println("f1" + f1);
                 // System.out.println("f2" + f2);
-                freqkey = (f1 * 100000) + (f2 * 1000) + f3;
+                freqkey = hash1(f1, f2, f3);
                 a = fingerprint.get(freqkey);
                 if (a == null) {
                     a = new ArrayList<Integer>();
@@ -140,6 +141,16 @@ public class AcousticAnalyzer {
             freqcounter++;
         }
         return fingerprint;
+    }
+
+    private static int hash1(int f1, int f2, int f3) {
+        return (f1 * 100000) + (f2 * 1000) + f3;
+    }
+
+    private static int hash2(int f1, int f2, int f3) {
+        int fuzzFactor = 2;
+        return ((f1 - (f1 % fuzzFactor)) * 100000) + ((f2 - (f2 % fuzzFactor))
+                * 1000) + (f3 - (f3 % fuzzFactor));
     }
 
 }

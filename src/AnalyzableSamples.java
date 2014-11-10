@@ -86,7 +86,7 @@ public abstract class AnalyzableSamples {
      * @param aS2
      * @return
      */
-    public abstract int[] getMatchPositionInSeconds(AnalyzableSamples aS2);
+    public abstract double[] getMatchPositionInSeconds(AnalyzableSamples aS2);
     
 
     /**

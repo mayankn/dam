@@ -79,12 +79,12 @@ public class AnalyzableSamplesFactory {
         }
 
         @Override
-        public int[] getMatchPositionInSeconds(AnalyzableSamples aS2) {
+        public double[] getMatchPositionInSeconds(AnalyzableSamples aS2) {
             return computeFragmentMatchWithTime(this.getFingerprint(),
                     aS2.getFingerprint());
         }
 
-        private int[] computeFragmentMatchWithTime(
+        private double[] computeFragmentMatchWithTime(
                 Map<Integer, List<Integer>> fp1,
                 Map<Integer, List<Integer>> fp2) {
             Set<Integer> s = new HashSet<Integer>();
@@ -104,8 +104,8 @@ public class AnalyzableSamplesFactory {
             if (sindex1 == -1 || sindex2 == -1)
                 return null;
             else
-                return new int[] { (int) (OFFSET_IN_SECONDS * sindex1),
-                        (int) (OFFSET_IN_SECONDS * sindex2) };
+                return new double[] { (OFFSET_IN_SECONDS * sindex1),
+                        (OFFSET_IN_SECONDS * sindex2) };
         }
 
         private int extractSequenceStartIndexForMatch(Set<Integer> s) {
@@ -118,9 +118,10 @@ public class AnalyzableSamplesFactory {
             int starti = 0;
             int seqcount = 1;
             int m = 210;
-            int errordensity = 5;
+            int initialError = 23;
+            int errordensity = 2;
             for (int i = 0; i < sequence.length - 1; i++) {
-                if (errors > (errordensity * seqcount)) {
+                if (errors > (initialError + (errordensity * seqcount))) {
                     sindex = -1;
                     seq = 0;
                     errors = 0;
