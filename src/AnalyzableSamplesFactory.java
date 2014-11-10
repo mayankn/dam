@@ -118,8 +118,8 @@ public class AnalyzableSamplesFactory {
             int starti = 0;
             int seqcount = 1;
             int m = 210;
-            int initialError = 23;
-            int errordensity = 2;
+            int initialError = 15;
+            int errordensity = 1;
             for (int i = 0; i < sequence.length - 1; i++) {
                 if (errors > (initialError + (errordensity * seqcount))) {
                     sindex = -1;

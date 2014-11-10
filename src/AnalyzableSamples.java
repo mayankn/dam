@@ -22,6 +22,7 @@ public abstract class AnalyzableSamples {
     private int fftsize;
     private double[] samples;
     private double[] fftResult;
+    private double[] hannWindow;
     double[] preFactors;
     private String fileName;
     private Map<Integer, List<Integer>> fingerprint;
@@ -40,6 +41,7 @@ public abstract class AnalyzableSamples {
         preFactors = FFTPreComputor.getPrecomputedFactors();
         exp2Map = FFTPreComputor.getExpMap();
         log2Map = FFTPreComputor.getLogMap();
+        hannWindow = FFTPreComputor.getHannWindow();
         performFFT();
         computeFingerprint();        
     }
@@ -124,10 +126,17 @@ public abstract class AnalyzableSamples {
         }
     }
 
+    /**
+     * Applies the hanning window function over each sample and constructs a
+     * bit reversed array
+     * @param input the audio samples present in window size amount of data
+     * @return
+     */
     private double[] bitReverseArray(double[] input) {
-        double[] brArr = new double[input.length << 1];
-        for (int i = 0; i < input.length; i++) {
-            brArr[bitReverseArray[i]] = input[i];
+        int inputSize = input.length;
+        double[] brArr = new double[inputSize << 1];
+        for (int i = 0; i < inputSize; i++) {
+            brArr[bitReverseArray[i]] = (input[i] * hannWindow[i]);
         }
         return brArr;
     }
