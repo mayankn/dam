@@ -2,42 +2,106 @@
 
 # detect audio misappropriations - Prototype
 
-echo "same .wav files should return MATCH"
-./dam -f samples/z01.wav -f samples/z01.wav
-echo "comparing one wav file with the same after converting it to mp3 and back to wav. MATCH"
-./dam -f samples/z01.wav -f samples/z02.wav
-echo "two different wav files comparison. Should return NO MATCH"
-./dam -f samples/z02.wav -f samples/z03.wav
-echo "comparing one wav file with the same after converting it to mp3 and back to wav. MATCH"
-./dam -f samples/z03.wav -f samples/z04.wav
-echo "two different wav files comparison. Should return NO MATCH"
-./dam -f samples/z04.wav -f samples/z05.wav
-echo "comparing one wav file with the same after converting it to mp3 and back to wav. MATCH"
-./dam -f samples/z05.wav -f samples/z06.wav
-echo "comparing two different wav files. Should return NO MATCH"
-./dam -f samples/z06.wav -f samples/z07.wav
-echo "comparing one wav file with the same, after converting the other to mp3 and back to wav. MATCH"
-./dam -f samples/z07.wav -f samples/z08.wav 
-echo "comparing two completely different wav files . should return NO MATCH"
-./dam -f samples/z05.wav -f samples/Sor3508.wav
-echo "checking incorrect command line arguments. without -f"
-./dam z01.wav z01.wav
-echo "checking unsupported format in the command line"
-./dam -f samples/z01.wav -f samples/Sor3508.mp3
-echo "checking inaccessible files in the command line"
-./dam -f samples/z01.wav -f Sor3508.mp3
+#echo "same .wav files should return MATCH"
+#./dam -f samples/z01.wav -f samples/z01.wav
+#echo "comparing one wav file with the same after converting it to mp3 and back to wav. MATCH"
+#./dam -f samples/z01.wav -f samples/z02.wav
+#echo "two different wav files comparison. Should return NO MATCH"
+#./dam -f samples/z02.wav -f samples/z03.wav
+#echo "comparing one wav file with the same after converting it to mp3 and back to wav. MATCH"
+#./dam -f samples/z03.wav -f samples/z04.wav
+#echo "two different wav files comparison. Should return NO MATCH"
+#./dam -f samples/z04.wav -f samples/z05.wav
+#echo "comparing one wav file with the same after converting it to mp3 and back to wav. MATCH"
+#./dam -f samples/z05.wav -f samples/z06.wav
+#echo "comparing two different wav files. Should return NO MATCH"
+#./dam -f samples/z06.wav -f samples/z07.wav
+#echo "comparing one wav file with the same, after converting the other to mp3 and back to wav. MATCH"
+#./dam -f samples/z07.wav -f samples/z08.wav
+#echo "comparing two completely different wav files . should return NO MATCH"
+#./dam -f samples/z05.wav -f samples/Sor3508.wav
+#echo "checking incorrect command line arguments. without -f"
+#./dam z01.wav z01.wav
+#echo "checking unsupported format in the command line"
+#./dam -f samples/z01.wav -f samples/Sor3508.mp3
+#echo "checking inaccessible files in the command line"
+#./dam -f samples/z01.wav -f Sor3508.mp3
+#
+#echo "comparing 2 min length same wav files. Should return MATCH"
+#./dam -f samples/wayfaring.wav -f samples/wayfaring.wav
+#echo "comparing 2 min length same wav files. with one converted to mp3 and back to wav. should return MATCH"
+#./dam -f samples/wayfaring.wav -f samples/wayfaring2mp3.wav
+#echo "comparing 5 min length same wav files. Should return MATCH"
+#./dam -f 5minwav.wav -f 5minwav.wav
+#echo "comparing a wav file with its reveresed file.Should return NO MATCH"
+#./dam -f samples/z05.wav -f samples/z05_reverse.wav
+#echo "comparing stereo wav file with its mono format. should return MATCH"
+#./dam -f samples/wayfaring.wav -f samples/wayfaring_mono.wav
+#echo "comparing same wav files with difference in amplitude. Should return MATCH"
+#./dam -f samples/z03.wav -f samples/z03_amp_inc_10db.wav
+#echo "comapring same wav files with one file has a fade In effect on its amplitude. Should return MATCH"
+#./dam -f samples/first10ofwayfaringnew_fadeIn.wav -f samples/first10ofwayfaringnew.wav
 
-echo "comparing 2 min length same wav files. Should return MATCH"
-./dam -f samples/wayfaring.wav -f samples/wayfaring.wav
-echo "comparing 2 min length same wav files. with one converted to mp3 and back to wav. should return MATCH"
-./dam -f samples/wayfaring.wav -f samples/wayfaring2mp3.wav
-echo "comparing 5 min length same wav files. Should return MATCH"
-./dam -f 5minwav.wav -f 5minwav.wav
-echo "comparing a wav file with its reveresed file.Should return NO MATCH"
-./dam -f samples/z05.wav -f samples/z05_reverse.wav
-echo "comparing stereo wav file with its mono format. should return MATCH"
-./dam -f samples/wayfaring.wav -f samples/wayfaring_mono.wav
-echo "comparing same wav files with difference in amplitude. Should return MATCH"
-./dam -f samples/z03.wav -f samples/z03_amp_inc_10db.wav
-echo "comapring same wav files with one file has a fade In effect on its amplitude. Should return MATCH"
-./dam -f samples/first10ofwayfaringnew_fadeIn.wav -f samples/first10ofwayfaringnew.wav
+echo "./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D4"
+./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D4
+echo "./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D5"
+./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D5
+echo "./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D6"
+./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D6
+echo "./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D7"
+./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D7
+echo "./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D8"
+./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D8
+echo "./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D9"
+./dam -d /home/naren90/Public/D1 -d /home/naren90/Public/D9
+echo "./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D5"
+./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D5
+echo "./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D6"
+./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D6
+echo "./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D7"
+./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D7
+echo "./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D8"
+./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D8
+echo "./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D9"
+./dam -d /home/naren90/Public/D4 -d /home/naren90/Public/D9
+echo "./dam -d /home/naren90/Public/D5 -d /home/naren90/Public/D6"
+./dam -d /home/naren90/Public/D5 -d /home/naren90/Public/D6
+echo "./dam -d /home/naren90/Public/D5 -d /home/naren90/Public/D7"
+./dam -d /home/naren90/Public/D5 -d /home/naren90/Public/D7
+echo "./dam -d /home/naren90/Public/D5 -d /home/naren90/Public/D8"
+./dam -d /home/naren90/Public/D5 -d /home/naren90/Public/D8
+echo "./dam -d /home/naren90/Public/D5 -d /home/naren90/Public/D9"
+./dam -d /home/naren90/Public/D5 -d /home/naren90/Public/D9
+echo "./dam -d /home/naren90/Public/D6 -d /home/naren90/Public/D7"
+./dam -d /home/naren90/Public/D6 -d /home/naren90/Public/D7
+echo "./dam -d /home/naren90/Public/D6 -d /home/naren90/Public/D8"
+./dam -d /home/naren90/Public/D6 -d /home/naren90/Public/D8
+echo "./dam -d /home/naren90/Public/D6 -d /home/naren90/Public/D9"
+./dam -d /home/naren90/Public/D6 -d /home/naren90/Public/D9
+echo "./dam -d /home/naren90/Public/D7 -d /home/naren90/Public/D8"
+./dam -d /home/naren90/Public/D7 -d /home/naren90/Public/D8
+echo "./dam -d /home/naren90/Public/D7 -d /home/naren90/Public/D9"
+./dam -d /home/naren90/Public/D7 -d /home/naren90/Public/D9
+echo "./dam -d /home/naren90/Public/D8 -d /home/naren90/Public/D9"
+./dam -d /home/naren90/Public/D8 -d /home/naren90/Public/D9
+
+echo "./dam -d /course/cs4500f14/Assignments/A6/D1 -d /course/cs4500f14/Assignments/A6/D2"
+./dam -d /course/cs4500f14/Assignments/A6/D1 -d /course/cs4500f14/Assignments/A6/D2
+echo "./dam -d /course/cs4500f14/Assignments/A6/D1 -d /course/cs4500f14/Assignments/A6/D3"
+./dam -d /course/cs4500f14/Assignments/A6/D1 -d /course/cs4500f14/Assignments/A6/D3
+echo "./dam -d /course/cs4500f14/Assignments/A6/D1 -d /course/cs4500f14/Assignments/A6/D4"
+./dam -d /course/cs4500f14/Assignments/A6/D1 -d /course/cs4500f14/Assignments/A6/D4
+echo "./dam -d /course/cs4500f14/Assignments/A6/D1 -d /course/cs4500f14/Assignments/A6/D5"
+./dam -d /course/cs4500f14/Assignments/A6/D1 -d /course/cs4500f14/Assignments/A6/D5
+echo "./dam -d /course/cs4500f14/Assignments/A6/D2 -d /course/cs4500f14/Assignments/A6/D3"
+./dam -d /course/cs4500f14/Assignments/A6/D2 -d /course/cs4500f14/Assignments/A6/D3
+echo "./dam -d /course/cs4500f14/Assignments/A6/D2 -d /course/cs4500f14/Assignments/A6/D4"
+./dam -d /course/cs4500f14/Assignments/A6/D2 -d /course/cs4500f14/Assignments/A6/D4
+echo "./dam -d /course/cs4500f14/Assignments/A6/D2 -d /course/cs4500f14/Assignments/A6/D5"
+./dam -d /course/cs4500f14/Assignments/A6/D2 -d /course/cs4500f14/Assignments/A6/D5
+echo "./dam -d /course/cs4500f14/Assignments/A6/D3 -d /course/cs4500f14/Assignments/A6/D4"
+./dam -d /course/cs4500f14/Assignments/A6/D3 -d /course/cs4500f14/Assignments/A6/D4
+echo "./dam -d /course/cs4500f14/Assignments/A6/D3 -d /course/cs4500f14/Assignments/A6/D5"
+./dam -d /course/cs4500f14/Assignments/A6/D3 -d /course/cs4500f14/Assignments/A6/D5
+echo "./dam -d /course/cs4500f14/Assignments/A6/D4 -d /course/cs4500f14/Assignments/A6/D5"
+./dam -d /course/cs4500f14/Assignments/A6/D4 -d /course/cs4500f14/Assignments/A6/D5

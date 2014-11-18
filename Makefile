@@ -7,7 +7,7 @@ src/AudioFile.java \
 src/AudioFiles.java \
 src/WavFile.java \
 src/Mp3File.java \
-src/PreComputor.java \
+src/Precomputor.java \
 src/AcousticAnalyzer.java \
 src/AnalyzableSamples.java \
 src/AnalyzableSamplesFactory.java \
