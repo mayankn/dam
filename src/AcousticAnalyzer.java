@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +14,127 @@ import java.util.Map;
  * 
  */
 public class AcousticAnalyzer {
+
+    public static void updateFingerprintForGivenSamples(
+            double[] audioSamples,
+            int sttime,
+            Map<Integer, List<Integer>> fingerprint) {
+        double absValue;
+        int frameSize = audioSamples.length;
+        int halfFrameSize = frameSize / 2;
+        int hash = 0, range = 10, i = 0, maxrange = 123;
+        double pmax = 0;
+        byte[] fmax = new byte[4];
+        byte fpmax = 0;
+        // TODO: replace with better range if possible - was 1, 120
+        for (int fband = 2; fband < maxrange;) {
+            if (fband < range) {
+                absValue =
+                        Math.pow(audioSamples[fband], 2)
+                                + Math.pow(audioSamples[fband + halfFrameSize],
+                                        2);
+                if (absValue > pmax) {
+                    pmax = absValue;
+                    fpmax = (byte) fband;
+                }
+                fband++;
+            } else {
+                fmax[i++] = fpmax;
+                pmax = 0;
+                fpmax = 0;
+                switch (range) {
+                case 10:
+                    range = 20;
+                    break;
+                case 20:
+                    range = 60;
+                    break;
+                case 60:
+                    range = maxrange - 1;
+                    break;
+                default:
+                    fband = maxrange;
+                }
+            }
+        }
+        hash = bitwiseHash(fmax[0], fmax[1], fmax[2], fmax[3]);
+        List<Integer> times = fingerprint.get(hash);
+        if (times == null) {
+            times = new ArrayList<Integer>();
+            times.add(sttime);
+            fingerprint.put(hash, times);
+        } else {
+            times.add(sttime);
+        }
+        sttime++;
+    }
+
+    public static void updateFingerprintForGivenSamples1(
+            double[] audioSamples,
+            int sttime,
+            Map<Integer, List<Integer>> fingerprint) {
+        double absValue;
+        int frameSize = audioSamples.length;
+        int halfFrameSize = frameSize / 2;
+        double[] bandPower = new double[33];
+        int hash = 0, tmp = 0, ptmp = 0, avg = 1, lc = 0;
+        double fpow = 0, linear = 0;
+        // TODO: check
+        for (int j = 1; j < 120; j++) {
+            absValue =
+                    Math.pow(audioSamples[j], 2)
+                            + Math.pow(audioSamples[j + halfFrameSize], 2);
+            if (j < 34) {
+                linear = linear + absValue;
+                if (j % 3 == 0) {
+                    bandPower[lc++] = linear / 3;
+                    linear = 0;
+                }
+            } else {
+                tmp = (int) (Math.log((double) j / 4) / 0.1);
+                if (ptmp == tmp) {
+                    fpow = fpow + absValue;
+                } else if (ptmp != 0) {
+                    bandPower[ptmp - 1] = fpow / avg;
+                    fpow = 0;
+                    tmp = 0;
+                    ptmp = 0;
+                    avg = 1;
+                    linear = 0;
+                } else {
+                    fpow = fpow + absValue;
+                }
+                avg++;
+                ptmp = tmp;
+            }
+        }
+        hash = bitwiseHash(bandPower);
+        List<Integer> times = fingerprint.get(hash);
+        if (times == null) {
+            times = new ArrayList<Integer>();
+            times.add(sttime);
+            fingerprint.put(hash, times);
+        } else {
+            times.add(sttime);
+        }
+        sttime++;
+    }
+
+    private static int bitwiseHash(byte fp1, byte fp2, byte fp3, byte fp4) {
+        int hash = (fp1 & 0xFF) | fp2 << 8 | fp3 << 16 | fp4 << 24;
+        return hash;
+    }
+
+    private static int bitwiseHash(double[] bandPower) {
+        int hash = Integer.MAX_VALUE;
+        for (int i = 1; i < bandPower.length; i++) {
+            if (bandPower[i - 1] < bandPower[i]) {
+                hash = (hash & ~(1 << i));
+            }
+        }
+        return hash;
+    }
+
     /**
      * 
      * @param audioSamples - Complex number representing amplitude and phase in
@@ -69,88 +189,6 @@ public class AcousticAnalyzer {
             temp += Math.pow(absValues[i] / avg, 2);
         }
         return Math.sqrt(temp / absValues.length);
-    }
-
-    public static Map<Integer, List<Integer>> extractFrequencyBasedFingerprint(
-            double[] audioSamples,
-            int frameSize) {
-        frameSize = frameSize << 1;
-        int samplesLength = audioSamples.length;
-        int halfFrameSize = (frameSize >> 1);
-        int quarterFrameSize = (halfFrameSize >> 1);
-        int threeQuarterFrameSize = halfFrameSize + quarterFrameSize;
-        // double[] absValues = new double[samplesLength];
-        Map<Integer, List<Integer>> fingerprint =
-                new HashMap<Integer, List<Integer>>();
-        double absValue;
-        int f1 = 0, f2 = 0, f3 = 0;
-        double h1 = 0, h2 = 0, h3 = 0;
-        int freqcounter = 0, freqkey = 0;
-        List<Integer> a = new ArrayList<Integer>();
-        int time = 0;
-        for (int j = 0; j < samplesLength; j++) {
-            absValue =
-                    Math.pow(audioSamples[j], 2)
-                            + Math.pow(audioSamples[j + halfFrameSize], 2);
-            if(freqcounter!=512 && (freqcounter<1 || freqcounter>500)) {
-
-                freqcounter++;
-                continue;
-            }            
-           
-            if (h1 < absValue) {
-                h3 = h2;
-                h2 = h1;
-                h1 = absValue;
-                f3 = f2;
-                f2 = f1;
-                f1 = freqcounter;
-            } else if (h2 < absValue) {
-                h3 = h2;
-                h2 = absValue;
-                f3 = f2;
-                f2 = freqcounter;
-            } else if (h3 < absValue) {
-                h3 = absValue;
-                f3 = freqcounter;
-            }
-
-            if (j % quarterFrameSize == 0 && j != 0) {
-                // System.out.println("f1" + f1);
-                // System.out.println("f2" + f2);
-                freqkey = hash1(f1, f2, f3);
-                a = fingerprint.get(freqkey);
-                if (a == null) {
-                    a = new ArrayList<Integer>();
-                    a.add(time);
-                    fingerprint.put(freqkey, a);
-                } else {
-                    a.add(time);
-                }                
-                time++;
-                freqcounter = 0;
-                j = j + threeQuarterFrameSize;
-                f1 = 0;
-                f2 = 0;
-                f3 = 0;
-                h1 = 0;
-                h2 = 0;
-                h3 = 0;
-
-            }
-            freqcounter++;
-        }
-        return fingerprint;
-    }
-
-    private static int hash1(int f1, int f2, int f3) {
-        return (f1 * 100000) + (f2 * 1000) + f3;
-    }
-
-    private static int hash2(int f1, int f2, int f3) {
-        int fuzzFactor = 2;
-        return ((f1 - (f1 % fuzzFactor)) * 100000) + ((f2 - (f2 % fuzzFactor))
-                * 1000) + (f3 - (f3 % fuzzFactor));
     }
 
 }

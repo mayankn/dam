@@ -1,7 +1,7 @@
 import java.util.HashMap;
 import java.util.Map;
 
-public class FFTPreComputor {
+public class Precomputor {
     private static final int PS = 17;
     private static final double twoPi = 2 * Math.PI;
     private static double[] preFactors;
@@ -28,10 +28,10 @@ public class FFTPreComputor {
         intMaps(1024, 10);
         intMaps(2048, 11);
         intMaps(4096, 12);
-        intMaps(8192, 13);
-        intMaps(16384, 14);
-        intMaps(32768, 15);
-        intMaps(65536, 16);
+        /*
+         * intMaps(8192, 13); intMaps(16384, 14); intMaps(32768, 15);
+         * intMaps(65536, 16);
+         */
     }
 
     static void intMaps(int key, int val) {
@@ -45,13 +45,13 @@ public class FFTPreComputor {
     static void initialize(int fftsize) {
         if (fftsize != size) {
             size = fftsize;
-            preCompute();
-            hanningWindow();
+            preComputeFFTFactors();
+            precomputeHanningWindow();
             constructBitReverseIndexArray();
         }
     }
 
-    private static void hanningWindow() {
+    private static void precomputeHanningWindow() {
         double windowFactor = twoPi / (size - 1);
         hannWindow = new double[size];
         for (int n = 0; n < size; n++) {
@@ -59,7 +59,7 @@ public class FFTPreComputor {
         }
     }
 
-    private static void preCompute() {
+    private static void preComputeFFTFactors() {
         try {
             int depth = log2Map.get(size);
             int ti = (size * depth);
@@ -118,7 +118,8 @@ public class FFTPreComputor {
         return log2Map;
     }
 
-    public static double[] getHannWindow() { return hannWindow; }
-
+    public static double[] getHannWindow() {
+        return hannWindow;
+    }
 
 }

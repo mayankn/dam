@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,48 +16,54 @@ import java.util.Map;
 public abstract class AnalyzableSamples {
     private static Map<Integer, Integer> log2Map =
             new HashMap<Integer, Integer>(17);
-    private int[] exp2Map;
-    private int[] bitReverseArray;
-    private int fftsize;
-    private double[] samples;
-    private double[] fftResult;
-    private double[] hannWindow;
-    double[] preFactors;
-    private String fileName;
-    private Map<Integer, List<Integer>> fingerprint;
-    private int slen;
-    private int bitRate;
+    private static int samples_per_frame;
+    private static int HALF_SAMPLE_FRAME_SIZE;
+    private static int THREE_QUARTER_SAMPLE_FRAME_SIZE;
+    private static int[] bitReverseArray;
+    private static double[] preFactors;
+    private static double[] hannWindow;
+    private static int fftsize;
+    private static int[] exp2Map;
+    private static boolean isInitialized = false;
 
-    protected AnalyzableSamples(double[] samples, int fftsize) {
-        slen = samples.length;
-        int bufferedlen = slen + (fftsize - slen % fftsize);
-        this.samples = new double[bufferedlen];
-        this.fftResult = new double[bufferedlen << 1];
-        System.arraycopy(samples, 0, this.samples, 0, slen);
-        this.fftsize = fftsize;
-        FFTPreComputor.initialize(fftsize);
-        bitReverseArray = FFTPreComputor.getBitReverseIndex();
-        preFactors = FFTPreComputor.getPrecomputedFactors();
-        exp2Map = FFTPreComputor.getExpMap();
-        log2Map = FFTPreComputor.getLogMap();
-        hannWindow = FFTPreComputor.getHannWindow();
-        performFFT();
-        computeFingerprint();        
+    public static void initialize(int size, int framesize) {
+        samples_per_frame = framesize;
+        HALF_SAMPLE_FRAME_SIZE = samples_per_frame / 2;
+        THREE_QUARTER_SAMPLE_FRAME_SIZE =
+                samples_per_frame + HALF_SAMPLE_FRAME_SIZE;
+        fftsize = size;
+        Precomputor.initialize(fftsize);
+        bitReverseArray = Precomputor.getBitReverseIndex();
+        preFactors = Precomputor.getPrecomputedFactors();
+        exp2Map = Precomputor.getExpMap();
+        log2Map = Precomputor.getLogMap();
+        hannWindow = Precomputor.getHannWindow();
+        isInitialized = true;
+    }
+
+    private double[] samples;
+    private String fileName;
+    private Map<Integer, List<Integer>> fingerprint =
+            new HashMap<Integer, List<Integer>>();
+    private int slen, bitRate;
+
+    protected AnalyzableSamples(double[] samples) {
+        if (!isInitialized) {
+            throw new RuntimeException(
+                    "ERROR: the class must be initialized before use");
+        }
+        this.samples = samples;
+        computeFingerprint();
+        freeMemory();
     }
 
     public int getSampleLength() {
         return slen;
     }
 
-    private void computeFingerprint() {
-        fingerprint =
-                AcousticAnalyzer.extractFrequencyBasedFingerprint(fftResult, fftsize);
+    private void freeMemory() {
         // to free memory
-        exp2Map = null;
-        bitReverseArray = null;
         samples = null;
-        fftResult = null;
-        preFactors = null;
     }
 
     public Map<Integer, List<Integer>> getFingerprint() {
@@ -74,61 +79,44 @@ public abstract class AnalyzableSamples {
     }
 
     /**
-     * To check if two AnalyzableSamples are a match(perceptually)     * 
-     * @param aS2 - {@AnalyzableSamples} 
+     * To check if two AnalyzableSamples are a match(perceptually) *
+     * @param aS2 - {@AnalyzableSamples}
      * @return
      */
     public abstract boolean isMatch(AnalyzableSamples aS2);
-    
+
     /**
-     * Returns  the offset in seconds of the beginning of the matching segment
-     * within the first file, along with the
-     * offset in seconds of the beginning of the matching segment
-     * within the second file. If there is no match, returns a null
+     * Returns the offset in seconds of the beginning of the matching segment
+     * within the first file, along with the offset in seconds of the beginning
+     * of the matching segment within the second file. If there is no match,
+     * returns a null
      * @param aS2
      * @return
      */
     public abstract double[] getMatchPositionInSeconds(AnalyzableSamples aS2);
-    
 
-    /**
-     * 
-     * @return
-     */
-    public double[] getSamples() {
-        if (samples == null) {
-            throw new IllegalStateException(
-                    "Error: sample data no longer exists");
-        }
-        return this.samples;
-    }
+    private void computeFingerprint() {
+        int slen = samples.length - THREE_QUARTER_SAMPLE_FRAME_SIZE;
+        int counter = 0;
+        for (int i = 0; i < slen;) {
+            double[] input = new double[fftsize];
 
-    /**
-     * 
-     * @return
-     */
-    public double[] getFFTResult() {
-        if (fftResult == null) {
-            throw new IllegalStateException(
-                    "Error: FFT result data no longer exists");
-        }
-        return this.fftResult;
-    }
+            System.arraycopy(samples, i, input, 0, samples_per_frame);
+            AcousticAnalyzer.updateFingerprintForGivenSamples(
+                    performFFT(input), counter++, fingerprint);
+            input = new double[fftsize];
 
-    private void performFFT() {
-        int slen = samples.length;
-        int resultsize = fftsize << 1;
-        for (int i = 0, nexti = 0; i < slen;) {
-            nexti = i + fftsize;
-            System.arraycopy(performFFT(Arrays.copyOfRange(samples, i, nexti)),
-                    0, fftResult, i << 1, resultsize);
-            i = nexti;
+            System.arraycopy(samples, i + HALF_SAMPLE_FRAME_SIZE, input, 0,
+                    samples_per_frame);
+            AcousticAnalyzer.updateFingerprintForGivenSamples(
+                    performFFT(input), counter++, fingerprint);
+            i = i + THREE_QUARTER_SAMPLE_FRAME_SIZE;
         }
     }
 
     /**
-     * Applies the hanning window function over each sample and constructs a
-     * bit reversed array
+     * Applies the hanning window function over each sample and constructs a bit
+     * reversed array
      * @param input the audio samples present in window size amount of data
      * @return
      */
@@ -136,7 +124,7 @@ public abstract class AnalyzableSamples {
         int inputSize = input.length;
         double[] brArr = new double[inputSize << 1];
         for (int i = 0; i < inputSize; i++) {
-            brArr[bitReverseArray[i]] = (input[i] * hannWindow[i]);
+            brArr[bitReverseArray[i]] = input[i] * hannWindow[i];
         }
         return brArr;
     }

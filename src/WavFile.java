@@ -1,9 +1,5 @@
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -13,108 +9,45 @@ import java.util.Map;
  * @author: Narendran K.P
  * 
  */
-public class WavFile extends AudioFile {
-    private byte[] fileData;
-    private String fileName;
-    private String shortName;
-    private static final int CANONICAL_SAMPLING_RATE = 44100;
-    private Map<String, Object> headerMap = new HashMap<String, Object>();
+public class WavFile extends AudioFile {    
+    private double[] channelData;
+    private String riffType, dataChunk;
+    private int noOfDataBytes;
+    private int averageBps;
+    private int samplingRate;
+    private int noOfChannels;
+    private int significantBitsPerSecond;
+    private static final double CANONICAL_SAMPLING_RATE = 44100;
 
     public WavFile(String fName) throws IOException {
-        this.fileName = fName;
-        File f = new File(fileName);
-        if (!f.isFile()) {
-            throw new RuntimeException(String.format(INVALID_FILE_PATH,
-                    fileName));
-        }
-        shortName = f.getName();
-        RandomAccessFile rf = new RandomAccessFile(f, "r");
-        fileData = new byte[(int) rf.length()];
-        rf.read(fileData);
-        rf.close();
+        super(fName, true);           
         if (fileData.length < 44) {
-            throw new RuntimeException("ERROR: insufficient data in file");
+            throwException(INSUFFICIENT_DATA);
         }
         extractHeaderData();
-    }
-
-    private double[] convertToCanonicalForm(double[] data) {
-        int dataLength = data.length;
-        int sampleRate = (Integer) headerMap.get("FMT_SAMPLE_RATE");
-        double duplicatingFactorOrig =
-                (double) CANONICAL_SAMPLING_RATE / sampleRate;
-        int duplicatingFactor = (int) duplicatingFactorOrig;
-        if (duplicatingFactorOrig != 0.91875
-                && duplicatingFactorOrig != duplicatingFactor) {
-            throw new RuntimeException("ERROR: Unsupported sampling rate");
-        }
-
-        if (duplicatingFactor == 1) {
-            return data;
-        }
-        double[] newFileSamples;
-        if (duplicatingFactorOrig == 0.91875) {
-            int newlen = (int) (dataLength * duplicatingFactorOrig);
-            newFileSamples = new double[newlen];
-            for (int i = 0; i < newlen; i++) {
-                double currentPosition = i / duplicatingFactorOrig;
-                int nearestLeftPosition = (int) currentPosition;
-                int nearestRightPosition = nearestLeftPosition + 1;
-                if (nearestRightPosition >= data.length) {
-                    nearestRightPosition = data.length - 1;
-                }
-                double slope =
-                        (data[nearestRightPosition] - data[nearestLeftPosition]);
-                double positionFromLeft = currentPosition - nearestLeftPosition;
-                newFileSamples[i] =
-                        ((slope * positionFromLeft) + data[nearestLeftPosition]);
-            }
-        } else {
-            newFileSamples = new double[dataLength * duplicatingFactor];
-            for (int i = 0; i < dataLength - 1; i++) {
-                double tmp = data[i];
-                int j = i * duplicatingFactor;
-                double offset = (data[i + 1] - tmp);
-                switch (duplicatingFactor) {
-                case 2:
-                    newFileSamples[j] = tmp;
-                    newFileSamples[j + 1] = (tmp + offset / 2);
-                    break;
-                case 4:
-                    newFileSamples[j] = tmp;
-                    newFileSamples[j + 1] = tmp + (offset / 4);
-                    newFileSamples[j + 2] = tmp + (offset * (2 / 4));
-                    newFileSamples[j + 3] = tmp + (offset * (3 / 4));
-                    break;
-                default:
-                    throw new RuntimeException(
-                            "ERROR: Unsupported sampling rate");
-                }
-            }
-        }
-        return newFileSamples;
+        extractChannelData();
     }
 
     /**
      * To extract the header data from wav file contained by this instance
      */
     private void extractHeaderData() {
-        headerMap.put("CHUNK_ID", readStringChunks(fileData, 0, 3));
-        headerMap.put("CHUNK_DATA_SIZE", readIntChunks(fileData, 4, 7));
-        headerMap.put("RIFF_TYPE", readStringChunks(fileData, 8, 11));
-        headerMap.put("FMT_CHUNK_ID", readStringChunks(fileData, 12, 15));
-        headerMap.put("FMT_CHUNK_DATA_SIZE", readIntChunks(fileData, 16, 19));
-        headerMap.put("FMT_COMPRESSION_CODE", readIntChunks(fileData, 20, 21));
-        headerMap.put("FMT_NO_OF_CHANNELS", readIntChunks(fileData, 22, 23));
-        headerMap.put("FMT_SAMPLE_RATE", readIntChunks(fileData, 24, 27));
-        headerMap.put("FMT_AVERAGE_BPS", readIntChunks(fileData, 28, 31));
-        headerMap.put("FMT_BLOCK_ALIGN", readIntChunks(fileData, 32, 33));
-        headerMap.put("FMT_SIGNIFICANT_BPS", readIntChunks(fileData, 34, 35));
-        headerMap.put("DATA_CHUNK_ID", readStringChunks(fileData, 36, 39));
-        headerMap.put("DATA_DWORD", readIntChunks(fileData, 40, 43));
+        byte[] headerData = Arrays.copyOf(fileData, 60);
+        riffType = readStringChunks(headerData, 8, 11);
+        dataChunk = readStringChunks(headerData, 36, 39);
+        significantBitsPerSecond = readIntChunks(headerData, 34, 35);
+        noOfChannels = readIntChunks(headerData, 22, 23);
+        samplingRate = readIntChunks(headerData, 24, 27);
+        averageBps = readIntChunks(headerData, 28, 31);
+        noOfDataBytes = readIntChunks(headerData, 40, 43);
+        // CHUNK_ID = readStringChunks(headerData, 0, 3));
+        // CHUNK_DATA_SIZE = readIntChunks(headerData, 4, 7));
+        // FMT_CHUNK_ID = readStringChunks(headerData, 12, 15));
+        // FMT_CHUNK_DATA_SIZE = readIntChunks(headerData, 16, 19));
+        // FMT_COMPRESSION_CODE = readIntChunks(headerData, 20, 21));
+        // FMT_BLOCK_ALIGN = readIntChunks(headerData, 32, 33));
         // does not exist for this file
-        // headerMap.put("FMT_EXTRA_FMT_BYTES", readIntChunks(fileData, 36,
-        // 37));
+        // FMT_EXTRA_FMT_BYTES = readIntChunks(fileData, 36, 37));
     }
 
     /**
@@ -122,7 +55,7 @@ public class WavFile extends AudioFile {
      */
     @Override
     public Map<String, Object> getHeaderData() {
-        return headerMap;
+        return null;
     }
 
     /**
@@ -130,8 +63,8 @@ public class WavFile extends AudioFile {
      */
     @Override
     public boolean areFileDurationsTheSame(AudioFile af2) {
-        double file1duration = extractDurationFromHeader(headerMap);
-        double file2duration = extractDurationFromHeader(af2.getHeaderData());
+        double file1duration = getDurationInSeconds();
+        double file2duration = af2.getDurationInSeconds();
         if (file1duration != file2duration) {
             return false;
         }
@@ -139,62 +72,122 @@ public class WavFile extends AudioFile {
     }
 
     public int getDurationInSeconds() {
-        return (int) extractDurationFromHeader(headerMap);
+        return (int) getFileDuration();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    private double extractDurationFromHeader(Map<String, Object> fileHeader) {
-        int datalength = (Integer) fileHeader.get("DATA_DWORD");
-        int averagebps = (Integer) fileHeader.get("FMT_AVERAGE_BPS");
-        return datalength / averagebps;
+    private double getFileDuration() {
+        return noOfDataBytes / averageBps;
+    }
+
+    @Override
+    public int getBps() {
+        return significantBitsPerSecond;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public double[] extractChannelData() {
-        int numChannels = (Integer) headerMap.get("FMT_NO_OF_CHANNELS");
-        int bpsPerChannel = (Integer) headerMap.get("FMT_SIGNIFICANT_BPS") / 8;
-        int bps = bpsPerChannel * numChannels;
-        int channelDataLength = ((Integer) headerMap.get("DATA_DWORD")) / bps;
-        boolean isSingleChannel = (numChannels == 1);
-        double[] avg = new double[channelDataLength];
-        int idx = 0;
-        byte[] t = new byte[bpsPerChannel];
+    public double[] getChannelData() {
+        return this.channelData;
+    }
+
+    private void extractChannelData() {
+        int bytesPerChannel, bpsAggregate, lengthForAChannel, idx = 0, val = 0;
+        bytesPerChannel = significantBitsPerSecond / 8;
+        bpsAggregate = bytesPerChannel * noOfChannels;
+        lengthForAChannel = noOfDataBytes / bpsAggregate;
+        boolean isSingleChannel = (noOfChannels == 1);
+        double[] mergedSamples = new double[lengthForAChannel];
         double right = 0, left = 0;
         // TODO : remove hard code if possible
-        for (int i = 44; i < fileData.length; i = i + bpsPerChannel) {
-            System.arraycopy(fileData, i - bpsPerChannel, t, 0, bpsPerChannel);
-
-            ByteBuffer wrapped =
-                    ByteBuffer.wrap(t).order(ByteOrder.LITTLE_ENDIAN);
-            int val = 0;
-
-            if (bpsPerChannel == 2) {
-                val = wrapped.getShort();
-            } else if (bpsPerChannel == 4) {
-                val = wrapped.getInt();
-            } else if (bpsPerChannel == 1) {
-                val = wrapped.get();
+        for (int i = 44; i < fileData.length; i = i + bytesPerChannel) {
+            if (bytesPerChannel == 2) {
+                val = (fileData[i] & 0xFF) | (fileData[i + 1]) << 8;
+            } else if (bytesPerChannel == 4) {
+                val =
+                        (fileData[i] & 0xFF) | (fileData[i + 1]) << 8
+                                | (fileData[i + 2]) << 16
+                                | (fileData[i + 3]) << 24;
+            } else if (bytesPerChannel == 1) {
+                val = (fileData[i] & 0xFF);
             } else {
-                throw new RuntimeException("ERROR: Bytes per sample of "
-                        + bpsPerChannel + " is not supported ");
+                throwException(String
+                        .format(BPS_NOT_SUPPORTED, bytesPerChannel));
             }
-            // TODO: verify
-            if (i % bps == 0) {
+            if (i % bpsAggregate == 0) {
                 right = val;
                 if (isSingleChannel) {
-                    avg[idx++] = right;
+                    mergedSamples[idx++] = right;
                 }
             } else {
                 left = val;
-                avg[idx++] = (right + left) / 2;
+                mergedSamples[idx++] = (right + left) / 2;
             }
         }
-        return convertToCanonicalForm(avg);
+        this.fileData = null;
+        convertToCanonicalForm(mergedSamples);
+    }
+
+    private void convertToCanonicalForm(double[] data) {
+        double conversionFactorExact = CANONICAL_SAMPLING_RATE / samplingRate;
+        int conversionFactor = (int) conversionFactorExact;
+        if (conversionFactorExact != 0.91875
+                && conversionFactorExact != conversionFactor) {
+            throwException(UNSUPPORTED_SAMPLING_RATE);
+        }
+        if (conversionFactor == 1) {
+            this.channelData = data;
+        } else if (conversionFactorExact == 0.91875) {
+            downSample(data, conversionFactorExact);
+        } else {
+            upSample(data, conversionFactor);
+        }
+
+    }
+
+    /**
+     * To down-sample audio data by the given conversion facor
+     * @param data
+     * @param conversionFactor
+     */
+    private void downSample(double[] data, double conversionFactor) {
+        int noOfSamplesOneLess = data.length - 1;
+        int newlen = (int) (data.length * conversionFactor);
+        double currentIndex, sampleAtRight, sampleAtLeft, slope;
+        int leftIndex, rightIndex;
+        double[] downsampledData = new double[newlen];
+        for (int i = 0; i < newlen; i++) {
+            currentIndex = i / conversionFactor;
+            leftIndex = (int) currentIndex;
+            rightIndex = Math.min(leftIndex + 1, noOfSamplesOneLess);
+            sampleAtRight = data[rightIndex];
+            sampleAtLeft = data[leftIndex];
+            slope = sampleAtRight - sampleAtLeft;
+            downsampledData[i] =
+                    slope * (currentIndex - leftIndex) + sampleAtLeft;
+        }
+        this.channelData = downsampledData;
+    }
+
+    /**
+     * To up-sample audio data by the given conversion factor
+     * Currently supports conversion factors of 2 and 4
+     * @param data - single channel audio data
+     * @param conversionFactor - factor by which the sample has to be up-sampled 
+     */
+    private void upSample(double[] data, int conversionFactor) {
+        int dataLength = data.length;
+        if (conversionFactor != 2 && conversionFactor != 4) {
+            throwException(UNSUPPORTED_SAMPLING_RATE);
+        }
+        double[] upSampledData = new double[dataLength * conversionFactor];
+        for (int i = 0; i < dataLength - 1; i++) {
+            double tmp = data[i];
+            int j = i * conversionFactor;
+            upSampledData[j] = tmp;
+        }
+        this.channelData = upSampledData;
     }
 
     /**
@@ -202,27 +195,18 @@ public class WavFile extends AudioFile {
      */
     @Override
     public boolean isAudioFileFormatValid() {
-        // System.out.println(headerMap.toString());
-        if (!headerMap.get("RIFF_TYPE").toString().equalsIgnoreCase("WAVE")) {
+        if (!riffType.equalsIgnoreCase("WAVE")) {
             return false;
         }
-        if (!headerMap.get("DATA_CHUNK_ID").toString().equalsIgnoreCase("data")) {
+        if (!dataChunk.equalsIgnoreCase("data")) {
             return false;
         }
-        if ((Integer) headerMap.get("FMT_NO_OF_CHANNELS") > 2) {
+        if (noOfChannels > 2) {
             return false;
         }
         return true;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getShortName() {
-        return shortName;
-    }
-
+    
     /**
      * To validate if the given file name is valid and has .wav extension
      * 

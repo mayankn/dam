@@ -9,12 +9,7 @@ import java.util.Arrays;
  */
 
 public abstract class AudioFiles {
-    private static String UNSUPPORTED_FILE_FORMAT =
-            "ERROR: Unsupported file format";
-    private static String INVALID_PATH_COMMAND_LINE =
-            "ERROR: invalid command line, the given path is not a directory";
-    private static String NO_FILES_IN_DIRECTORY =
-            "ERROR: No files in the given directory";
+   
 
     public static AudioFile[] makeAudioFilesFromArg(
             String flag,
@@ -43,7 +38,7 @@ public abstract class AudioFiles {
         } else if (ftype == AudioFile.FILE_TYPE.WAV) {
             af = new WavFile(fileName);
         } else {
-            throw new RuntimeException(UNSUPPORTED_FILE_FORMAT);
+            throw new RuntimeException(AudioFile.UNSUPPORTED_FILE_FORMAT);
         }
         return af;
     }
@@ -56,10 +51,10 @@ public abstract class AudioFiles {
         if (fi.isDirectory()) {
             fileNames = fi.list();
         } else {
-            throw new RuntimeException(INVALID_PATH_COMMAND_LINE);
+            throw new RuntimeException(AudioFile.INVALID_PATH_COMMAND_LINE);
         }
         if (fileNames == null || fileNames.length == 0) {
-            throw new RuntimeException(NO_FILES_IN_DIRECTORY);
+            throw new RuntimeException(AudioFile.NO_FILES_IN_DIRECTORY);
         }
         AudioFile[] audioFiles = new AudioFile[fileNames.length];
         int idx = 0;
