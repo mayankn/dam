@@ -105,3 +105,5 @@ echo "./dam -d /course/cs4500f14/Assignments/A6/D3 -d /course/cs4500f14/Assignme
 ./dam -d /course/cs4500f14/Assignments/A6/D3 -d /course/cs4500f14/Assignments/A6/D5
 echo "./dam -d /course/cs4500f14/Assignments/A6/D4 -d /course/cs4500f14/Assignments/A6/D5"
 ./dam -d /course/cs4500f14/Assignments/A6/D4 -d /course/cs4500f14/Assignments/A6/D5
+echo "./dam -d /home/naren90/Public/DMix -d /home/naren90/Public/DMix"
+./dam -d /home/naren90/Public/DMix -d /home/naren90/Public/DMix

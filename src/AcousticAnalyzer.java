@@ -15,7 +15,11 @@ import java.util.Map;
  */
 public class AcousticAnalyzer {
 
-    public static void updateFingerprintForGivenSamples(
+    private static final int[] BARK_SCALE = new int[] { 5, 7, 9, 12, 14, 16,
+            19, 21, 24, 26, 29, 33, 36, 39, 43, 46, 50, 54, 59, 64, 69, 74, 80,
+            86, 93, 100, 108, 116, 125, 126 };
+
+    public static void updateFingerprintForGivenSamples1(
             double[] audioSamples,
             int sttime,
             Map<Integer, List<Integer>> fingerprint) {
@@ -69,43 +73,30 @@ public class AcousticAnalyzer {
         sttime++;
     }
 
-    public static void updateFingerprintForGivenSamples1(
-            double[] audioSamples,
-            int sttime,
-            Map<Integer, List<Integer>> fingerprint) {
+    public static void updateFingerprintForGivenSamples(
+            double[] audioSamples, int sttime, Map<Integer,
+            List<Integer>> fingerprint) {
         double absValue;
         int frameSize = audioSamples.length;
         int halfFrameSize = frameSize / 2;
         double[] bandPower = new double[33];
-        int hash = 0, tmp = 0, ptmp = 0, avg = 1, lc = 0;
-        double fpow = 0, linear = 0;
+        int hash = 0, range = BARK_SCALE[0], i = 0, maxrange = 120;
+        int counter = 0;
+        double fpow = 0;
         // TODO: check
-        for (int j = 1; j < 120; j++) {
-            absValue =
-                    Math.pow(audioSamples[j], 2)
-                            + Math.pow(audioSamples[j + halfFrameSize], 2);
-            if (j < 34) {
-                linear = linear + absValue;
-                if (j % 3 == 0) {
-                    bandPower[lc++] = linear / 3;
-                    linear = 0;
-                }
+        for (int fband = 13; fband < maxrange;) {
+            if (fband < range) {
+                absValue = Math.sqrt(Math.pow(audioSamples[fband], 2)
+                        + Math.pow(audioSamples[fband + halfFrameSize], 2));
+                fpow = fpow + absValue;
+                fband++;
+                counter++;
             } else {
-                tmp = (int) (Math.log((double) j / 4) / 0.1);
-                if (ptmp == tmp) {
-                    fpow = fpow + absValue;
-                } else if (ptmp != 0) {
-                    bandPower[ptmp - 1] = fpow / avg;
-                    fpow = 0;
-                    tmp = 0;
-                    ptmp = 0;
-                    avg = 1;
-                    linear = 0;
-                } else {
-                    fpow = fpow + absValue;
-                }
-                avg++;
-                ptmp = tmp;
+                bandPower[i] = fpow / counter;
+                counter = 0;
+                fpow = 0;
+                i++;
+                range = BARK_SCALE[i];
             }
         }
         hash = bitwiseHash(bandPower);

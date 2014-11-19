@@ -98,19 +98,25 @@ public abstract class AnalyzableSamples {
     private void computeFingerprint() {
         int slen = samples.length - THREE_QUARTER_SAMPLE_FRAME_SIZE;
         int counter = 0;
+        double[] input = new double[fftsize];
         for (int i = 0; i < slen;) {
-            double[] input = new double[fftsize];
-
-            System.arraycopy(samples, i, input, 0, samples_per_frame);
+            applyHannWindow(input, i);
             AcousticAnalyzer.updateFingerprintForGivenSamples(
                     performFFT(input), counter++, fingerprint);
-            input = new double[fftsize];
-
-            System.arraycopy(samples, i + HALF_SAMPLE_FRAME_SIZE, input, 0,
-                    samples_per_frame);
+            applyHannWindow(input, i + HALF_SAMPLE_FRAME_SIZE);
             AcousticAnalyzer.updateFingerprintForGivenSamples(
                     performFFT(input), counter++, fingerprint);
             i = i + THREE_QUARTER_SAMPLE_FRAME_SIZE;
+        }
+    }
+
+    private void applyHannWindow(double[] input, int start) {
+        int end = start + samples_per_frame + 1;
+        for (int i = start, j = 0; i < end; i++, j++) {
+            input[j] = samples[i] * hannWindow[j];
+        }
+        for (int i = samples_per_frame; i < fftsize; i++) {
+            input[i] = 0;
         }
     }
 
@@ -124,7 +130,7 @@ public abstract class AnalyzableSamples {
         int inputSize = input.length;
         double[] brArr = new double[inputSize << 1];
         for (int i = 0; i < inputSize; i++) {
-            brArr[bitReverseArray[i]] = input[i] * hannWindow[i];
+            brArr[bitReverseArray[i]] = input[i];
         }
         return brArr;
     }

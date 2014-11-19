@@ -16,7 +16,7 @@ public class AnalyzableSamplesFactory {
     private static final int ERROR_THRESHOLD = 5,
             FFT_WINDOW_SIZE = 2048,
             FRAME_COUNT_FOR_5_SECONDS = 163,
-            ERROR_DENSITY = 2,
+            ERROR_DENSITY = 10,
             MIN_HASH_COLLISIONS_FOR_MATCH = ERROR_THRESHOLD
                     + (int) ((double) FRAME_COUNT_FOR_5_SECONDS / ERROR_DENSITY)
                     + 2;
@@ -113,7 +113,8 @@ public class AnalyzableSamplesFactory {
             sequence = s.toArray(sequence);
             Arrays.sort(sequence);
             // System.out.println(Arrays.asList(sequence));
-            if (sequence.length <= (MIN_HASH_COLLISIONS_FOR_MATCH / errScaling)) {
+            if (sequence.length <=  (MIN_HASH_COLLISIONS_FOR_MATCH /
+                    errScaling)) {
                 return -1;
             }
             int cleanupidx = 0;
@@ -121,7 +122,8 @@ public class AnalyzableSamplesFactory {
             int[] diffarr = new int[size];
             int diff = 0;
             for (int i = 0; i < sequence.length - 1; i++) {
-                if (errors >= (ERROR_THRESHOLD + (ERROR_DENSITY * errScaling * seq))) {
+                if (errors >= (ERROR_THRESHOLD +  (ERROR_DENSITY * errScaling
+                        * seq))) {
                     i = i - 1;
                     sofar = sofar - diffarr[cleanupidx];
                     errors = errors - errarr[cleanupidx];
@@ -227,7 +229,8 @@ public class AnalyzableSamplesFactory {
         @Override
         public boolean isMatch(AnalyzableSamples aS2) {
             int distanceThreshold = 200;
-            if (distance(this.getFingerprint(), aS2.getFingerprint()) <= distanceThreshold) {
+            if (distance(this.getFingerprint(),  aS2.getFingerprint()) <=
+                    distanceThreshold) {
                 return true;
             }
             return false;
