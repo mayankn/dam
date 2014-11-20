@@ -7,19 +7,25 @@ import java.util.Map;
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
- * 
- *          </br> Description: This Class contains static methods to extract
- *          audio finger print for every frame of the given frequency domain
- *          audio data.
- * 
+ * <p/>
+ * <br/>Description: This Class contains static methods to extract
+ * audio finger print for every frame of the given frequency domain
+ * audio data.
  */
 public class AcousticAnalyzer {
 
-    private static final int[] BARK_SCALE = new int[] { 5, 7, 9, 12, 14, 16,
+    private static final int[] BARK_SCALE = new int[]{5, 7, 9, 12, 14, 16,
             19, 21, 24, 26, 29, 33, 36, 39, 43, 46, 50, 54, 59, 64, 69, 74, 80,
-            86, 93, 100, 108, 116, 125, 126 };
+            86, 93, 100, 108, 116, 125, 134, 146, 157, 171, 185, 186};
 
-    public static void updateFingerprintForGivenSamples1(
+    /**
+     * @param audioSamples - samples of audio
+     * @param sttime
+     * @param fingerprint  - audio fingerprint
+     *                     Desscription: computes a new audio fingerprint
+     *                     based on the average power for each frequency band
+     */
+    public static void updateFingerprintForGivenSamples(
             double[] audioSamples,
             int sttime,
             Map<Integer, List<Integer>> fingerprint) {
@@ -31,12 +37,12 @@ public class AcousticAnalyzer {
         byte[] fmax = new byte[4];
         byte fpmax = 0;
         // TODO: replace with better range if possible - was 1, 120
-        for (int fband = 2; fband < maxrange;) {
+        for (int fband = 2; fband < maxrange; ) {
             if (fband < range) {
                 absValue =
                         Math.pow(audioSamples[fband], 2)
                                 + Math.pow(audioSamples[fband + halfFrameSize],
-                                        2);
+                                2);
                 if (absValue > pmax) {
                     pmax = absValue;
                     fpmax = (byte) fband;
@@ -47,17 +53,17 @@ public class AcousticAnalyzer {
                 pmax = 0;
                 fpmax = 0;
                 switch (range) {
-                case 10:
-                    range = 20;
-                    break;
-                case 20:
-                    range = 60;
-                    break;
-                case 60:
-                    range = maxrange - 1;
-                    break;
-                default:
-                    fband = maxrange;
+                    case 10:
+                        range = 20;
+                        break;
+                    case 20:
+                        range = 60;
+                        break;
+                    case 60:
+                        range = maxrange - 1;
+                        break;
+                    default:
+                        fband = maxrange;
                 }
             }
         }
@@ -73,18 +79,24 @@ public class AcousticAnalyzer {
         sttime++;
     }
 
-    public static void updateFingerprintForGivenSamples(
+    /**
+     * @param audioSamples
+     * @param sttime
+     * @param fingerprint  Description: computes the new audio fingerprint
+     *                     based on the Bark scale frequency bands
+     */
+    public static void updateFingerprintForGivenSamples1(
             double[] audioSamples, int sttime, Map<Integer,
             List<Integer>> fingerprint) {
         double absValue;
         int frameSize = audioSamples.length;
         int halfFrameSize = frameSize / 2;
         double[] bandPower = new double[33];
-        int hash = 0, range = BARK_SCALE[0], i = 0, maxrange = 120;
+        int hash = 0, range = BARK_SCALE[0], i = 0, maxrange = 126;
         int counter = 0;
         double fpow = 0;
         // TODO: check
-        for (int fband = 13; fband < maxrange;) {
+        for (int fband = 13; fband < maxrange; ) {
             if (fband < range) {
                 absValue = Math.sqrt(Math.pow(audioSamples[fband], 2)
                         + Math.pow(audioSamples[fband + halfFrameSize], 2));
@@ -111,11 +123,26 @@ public class AcousticAnalyzer {
         sttime++;
     }
 
+    /**
+     * @param fp1
+     * @param fp2
+     * @param fp3
+     * @param fp4
+     * @return - bit-wise hash computed from the 4 bits of the input
+     * frequencies
+     * Description: Computes a bit-wise hash from the 4 input frequency bits
+     */
     private static int bitwiseHash(byte fp1, byte fp2, byte fp3, byte fp4) {
         int hash = (fp1 & 0xFF) | fp2 << 8 | fp3 << 16 | fp4 << 24;
         return hash;
     }
 
+    /**
+     * @param bandPower
+     * @return - bit-wise hash of the total power of the band
+     * Description: Computes the bit-wise hash of the total power of the
+     * given band
+     */
     private static int bitwiseHash(double[] bandPower) {
         int hash = Integer.MAX_VALUE;
         for (int i = 1; i < bandPower.length; i++) {
@@ -127,13 +154,12 @@ public class AcousticAnalyzer {
     }
 
     /**
-     * 
      * @param audioSamples - Complex number representing amplitude and phase in
-     *            frequency domain, where audioSamples[i] represents a real
-     *            component and audioSamples[i + frameSize] represents the
-     *            corresponding imaginary component.
-     * @param frameSize - The frame size in terms of number of samples for which
-     *            the finger print has to be extracted.
+     *                     frequency domain, where audioSamples[i] represents
+     *                     a real component and audioSamples[i + frameSize]
+     *                     represents the corresponding imaginary component.
+     * @param frameSize    - The frame size in terms of number of samples for
+     *                     which the finger print has to be extracted.
      * @return
      */
     public static double[] extractRmsBasedFingerprint(
@@ -168,8 +194,7 @@ public class AcousticAnalyzer {
     }
 
     /**
-     * 
-     * @param avg : Average value used for Normalization
+     * @param avg       : Average value used for Normalization
      * @param absValues : Absolute value representing amplitude of a sample
      * @return
      */

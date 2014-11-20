@@ -9,6 +9,13 @@ import java.util.Map;
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
+ * Description: This class converts the byte data from a valid mp3 audio file
+ * into a canonical format suitable for analysis.
+ * The canonical format used by the file is CD-quality audio with 16 bits per
+ * sample, single channel, 44.1 Khz sampling rate represented as a double[]
+ * array.
+ * Prerequisites: Requires the software 'lame' to be pre-installed in the
+ * path "/course/cs5500f14/bin/lame" which has to be accessible
  * 
  */
 public class Mp3File extends AudioFile {
@@ -118,6 +125,10 @@ public class Mp3File extends AudioFile {
         return internalRepresentation.getBps();
     }
 
+    /**
+     * Description - stores an internal representation of the converted MP3
+     * file
+     */
     private void setInternalRepresentation() {
         if (internalRepresentation == null) {
             try {

@@ -1,6 +1,15 @@
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author: Magesh Ramachandran
+ * @author: Mayank Narashiman
+ * @author: Narendran K.P
+ * Description: This class efficiently pre-computes all the redundant and
+ * repetitive
+ * computations needed by the FFT algorithm on each sample corresponding to
+ * the size of the FFT window
+ */
 public class Precomputor {
     private static final int PS = 17;
     private static final double twoPi = 2 * Math.PI;
@@ -51,6 +60,10 @@ public class Precomputor {
         }
     }
 
+    /**
+     * Description - pre-computes the values of the hanning window function
+     * for a given sample corresponding to the FFT size
+     */
     private static void precomputeHanningWindow() {
         double windowFactor = twoPi / (size - 1);
         hannWindow = new double[size];
@@ -93,6 +106,9 @@ public class Precomputor {
         }
     }
 
+    /**
+     * Description - Constructs a bit reversed array of the size of FFT window
+     */
     private static void constructBitReverseIndexArray() {
         int expVal = log2Map.get(size);
         bitReverseArray = new int[size];

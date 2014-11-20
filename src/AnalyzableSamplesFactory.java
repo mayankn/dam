@@ -7,7 +7,9 @@ import java.util.Set;
 /**
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
- * @author: Narendran K.P Description:
+ * @author: Narendran K.P
+ * Description: Static factory class that instantiates the AnalyzableSamples
+ * object
  * 
  */
 public class AnalyzableSamplesFactory {
@@ -16,7 +18,7 @@ public class AnalyzableSamplesFactory {
     private static final int ERROR_THRESHOLD = 5,
             FFT_WINDOW_SIZE = 2048,
             FRAME_COUNT_FOR_5_SECONDS = 163,
-            ERROR_DENSITY = 10,
+            ERROR_DENSITY = 2,
             MIN_HASH_COLLISIONS_FOR_MATCH = ERROR_THRESHOLD
                     + (int) ((double) FRAME_COUNT_FOR_5_SECONDS / ERROR_DENSITY)
                     + 2;
@@ -38,6 +40,11 @@ public class AnalyzableSamplesFactory {
         return new AnalyzableSamplesForFragmentMatching(data);
     }
 
+    /**
+     *
+     * @param isamples - audio samples
+     * Description: validates the input data
+     */
     private static void validateInputData(double[] isamples) {
         if (isamples == null) {
             throw new IllegalArgumentException();
@@ -74,6 +81,15 @@ public class AnalyzableSamplesFactory {
                     aS2.getFingerprint(), errScaling);
         }
 
+        /**
+         *
+         * @param fp1 - map of fingerprints
+         * @param fp2 - map of fingerprints
+         * @param errScaling - error scaling factor to adjust the threshold
+         *                   value for 8-bit audio
+         * @return - an array of time offsets from the beginning of the audio
+         * of matching audio fingerprints
+         */
         private double[] computeFragmentMatchWithTime(
                 Map<Integer, List<Integer>> fp1,
                 Map<Integer, List<Integer>> fp2,
@@ -104,6 +120,12 @@ public class AnalyzableSamplesFactory {
                     (OFFSET_IN_SECONDS * sindex2) };
         }
 
+        /**
+         *
+         * @param s - set of time offsets
+         * @param errScaling - error scaling factor
+         * @return - start time of the sequence with a hash match
+         */
         private int extractSequenceStartIndexForMatch(
                 Set<Integer> s,
                 int errScaling) {

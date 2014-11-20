@@ -7,6 +7,10 @@ import java.util.Map;
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
+ * Description: This class converts the given audio sample with related byte
+ * data into suitable canonical form that is used for analysis purpose. The
+ * canonical form is a CD-quality 16-bit PCM audio wav format with 44.1 Khz
+ * sampling rate, represented as a double[] array.
  * 
  */
 public class WavFile extends AudioFile {    
@@ -92,6 +96,9 @@ public class WavFile extends AudioFile {
         return this.channelData;
     }
 
+    /**
+     * Converts the file data to canonical form
+     */
     private void extractChannelData() {
         int bytesPerChannel, bpsAggregate, lengthForAChannel, idx = 0, val = 0;
         bytesPerChannel = significantBitsPerSecond / 8;
@@ -129,6 +136,12 @@ public class WavFile extends AudioFile {
         convertToCanonicalForm(mergedSamples);
     }
 
+
+    /**
+     * To Convert the data to canonical format based on sampling rate and
+     * bit rate
+     * @param data
+     */
     private void convertToCanonicalForm(double[] data) {
         double conversionFactorExact = CANONICAL_SAMPLING_RATE / samplingRate;
         int conversionFactor = (int) conversionFactorExact;
@@ -174,7 +187,7 @@ public class WavFile extends AudioFile {
      * To up-sample audio data by the given conversion factor
      * Currently supports conversion factors of 2 and 4
      * @param data - single channel audio data
-     * @param conversionFactor - factor by which the sample has to be up-sampled 
+     * @param conversionFactor - factor by which the sample has to be upsampled
      */
     private void upSample(double[] data, int conversionFactor) {
         int dataLength = data.length;

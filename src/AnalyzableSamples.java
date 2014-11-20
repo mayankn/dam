@@ -8,7 +8,7 @@ import java.util.Map;
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- *          </br>Description: This class is to represent audio sample data in a
+ *          <br/>Description: This class is to represent audio sample data in a
  *          format that facilitates perceptual comparison with data from other
  *          audio files
  * 
@@ -26,6 +26,13 @@ public abstract class AnalyzableSamples {
     private static int[] exp2Map;
     private static boolean isInitialized = false;
 
+    /**
+     *
+     * @param size - FFT window size
+     * @param framesize - size of the frame
+     * Description - init method used to initialize various computation
+     *                  parameters
+     */
     public static void initialize(int size, int framesize) {
         samples_per_frame = framesize;
         HALF_SAMPLE_FRAME_SIZE = samples_per_frame / 2;
@@ -95,6 +102,11 @@ public abstract class AnalyzableSamples {
      */
     public abstract double[] getMatchPositionInSeconds(AnalyzableSamples aS2);
 
+    /**
+     * Description - Computes the audio fingerprint based on the chosen the
+     * fingerprinting mechanism after applying the hanning window function to
+     * the input audio in the frequency domain
+     */
     private void computeFingerprint() {
         int slen = samples.length - THREE_QUARTER_SAMPLE_FRAME_SIZE;
         int counter = 0;
@@ -110,6 +122,12 @@ public abstract class AnalyzableSamples {
         }
     }
 
+    /**
+     *
+     * @param input - audio samples corresponding to window size of the FFT
+     * @param start
+     * Description: applies the hanning window function
+     */
     private void applyHannWindow(double[] input, int start) {
         int end = start + samples_per_frame + 1;
         for (int i = start, j = 0; i < end; i++, j++) {

@@ -6,11 +6,22 @@ import java.util.Arrays;
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
+ * Description: This is an abstract class to handle and instantiate all the
+ * supported audio file formats appropriately
  */
 
 public abstract class AudioFiles {
-   
 
+
+    /**
+     *
+     * @param flag
+     * @param fpath
+     * @param paramNum
+     * @return - list of AudioFile instances
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public static AudioFile[] makeAudioFilesFromArg(
             String flag,
             String fpath,
@@ -27,6 +38,15 @@ public abstract class AudioFiles {
         return listOfFiles2;
     }
 
+    /**
+     *
+     * @param fileName
+     * @param paramNum
+     * @param isDirectory
+     * @return - an AudioFile instance created from the input file path
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public static AudioFile makeAudioFileByExtension(
             String fileName,
             int paramNum,
@@ -43,6 +63,14 @@ public abstract class AudioFiles {
         return af;
     }
 
+    /**
+     *
+     * @param dirName
+     * @param paramNum
+     * @return - a list of AudioFile instances created from the input directory
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public static AudioFile[] makeAllAudioFilesInDirectory(
             String dirName,
             int paramNum) throws IOException, InterruptedException {
