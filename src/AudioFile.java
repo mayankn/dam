@@ -1,8 +1,6 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Map;
 
 /**
@@ -100,24 +98,6 @@ public abstract class AudioFile {
     }
 
     public abstract int getDurationInSeconds();
-
-    protected int readIntChunks(byte[] b, int fromidx, int toidx) {
-        byte[] chunk = extractChunk(b, fromidx, toidx);
-        ByteBuffer wrapped =
-                ByteBuffer.wrap(chunk).order(ByteOrder.LITTLE_ENDIAN);
-        return wrapped.getInt();
-    }
-
-    protected byte[] extractChunk(byte[] b, int fromidx, int toidx) {
-        byte[] chunk = new byte[4];
-        System.arraycopy(b, fromidx, chunk, 0, toidx + 1 - fromidx);
-        return chunk;
-    }
-
-    protected String readStringChunks(byte[] b, int fromidx, int toidx) {
-        byte[] chunk = extractChunk(b, fromidx, toidx);
-        return new String(chunk);
-    }
 
     protected static FILE_TYPE getFileTypeFromName(String fileName) {
         int fnameLength = fileName.length();

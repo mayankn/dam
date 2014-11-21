@@ -1,5 +1,6 @@
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Map;
 
 /**
@@ -7,51 +8,87 @@ import java.util.Map;
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
- * Description: This class converts the given audio sample with related byte
- * data into suitable canonical form that is used for analysis purpose. The
- * canonical form is a CD-quality 16-bit PCM audio wav format with 44.1 Khz
- * sampling rate, represented as a double[] array.
+ * 
+ *          </br> Description: This class converts the given audio sample with
+ *          related byte data into suitable canonical form that is used for
+ *          analysis. The canonical form is a CD-quality 16-bit PCM audio wav
+ *          format with 44.1 Khz sampling rate, represented as a double[] array.
  * 
  */
-public class WavFile extends AudioFile {    
+public class WavFile extends AudioFile {
     private double[] channelData;
-    private String riffType, dataChunk;
+    private String riffType;
     private int noOfDataBytes;
     private int averageBps;
     private int samplingRate;
     private int noOfChannels;
     private int significantBitsPerSecond;
+    private int dataChunkIdx;
     private static final double CANONICAL_SAMPLING_RATE = 44100;
+    private static final String CHUNK_RIFF = "RIFF";
+    private static final String CHUNK_FMT = "fmt";
+    private static final String CHUNK_DATA = "data";
 
     public WavFile(String fName) throws IOException {
-        super(fName, true);           
+        super(fName, true);
         if (fileData.length < 44) {
             throwException(INSUFFICIENT_DATA);
         }
-        extractHeaderData();
+        readHeaderChunks();
         extractChannelData();
     }
 
-    /**
-     * To extract the header data from wav file contained by this instance
-     */
-    private void extractHeaderData() {
-        byte[] headerData = Arrays.copyOf(fileData, 60);
-        riffType = readStringChunks(headerData, 8, 11);
-        dataChunk = readStringChunks(headerData, 36, 39);
-        significantBitsPerSecond = readIntChunks(headerData, 34, 35);
-        noOfChannels = readIntChunks(headerData, 22, 23);
-        samplingRate = readIntChunks(headerData, 24, 27);
-        averageBps = readIntChunks(headerData, 28, 31);
-        noOfDataBytes = readIntChunks(headerData, 40, 43);
-        // CHUNK_ID = readStringChunks(headerData, 0, 3));
-        // CHUNK_DATA_SIZE = readIntChunks(headerData, 4, 7));
-        // FMT_CHUNK_ID = readStringChunks(headerData, 12, 15));
-        // FMT_CHUNK_DATA_SIZE = readIntChunks(headerData, 16, 19));
-        // FMT_COMPRESSION_CODE = readIntChunks(headerData, 20, 21));
-        // FMT_BLOCK_ALIGN = readIntChunks(headerData, 32, 33));
-        // does not exist for this file
-        // FMT_EXTRA_FMT_BYTES = readIntChunks(fileData, 36, 37));
+    private void readHeaderChunks() {
+        int chunkDataSize;
+        String chunkId;
+        for (int idx = 0; idx < 80;) {
+            chunkId = readStringChunks(fileData, idx, idx + 3);
+            if (chunkId != null) {
+                chunkId = chunkId.trim();
+            }
+            chunkDataSize = extractChunkData(chunkId, idx);
+            if (noOfDataBytes > 0) {
+                break;
+            }
+            idx = idx + chunkDataSize;
+        }
+    }
+
+    private int extractChunkData(String chunkId, int idx) {
+        int chunkDataSize = readIntChunks(fileData, idx + 4, idx + 7);
+        idx = idx + 8;
+        if (CHUNK_RIFF.equalsIgnoreCase(chunkId)) {
+            riffType = readStringChunks(fileData, idx, idx + 3);
+            return 12;
+        } else if (CHUNK_FMT.equalsIgnoreCase(chunkId)) {
+            noOfChannels = readIntChunks(fileData, idx + 2, idx + 3);
+            samplingRate = readIntChunks(fileData, idx + 4, idx + 7);
+            averageBps = readIntChunks(fileData, idx + 8, idx + 11);
+            significantBitsPerSecond =
+                    readIntChunks(fileData, idx + 14, idx + 15);
+        } else if (CHUNK_DATA.equalsIgnoreCase(chunkId)) {
+            dataChunkIdx = idx;
+            noOfDataBytes = chunkDataSize;
+        }
+        return chunkDataSize + 8;
+    }
+
+    private int readIntChunks(byte[] b, int fromidx, int toidx) {
+        byte[] chunk = extractChunk(b, fromidx, toidx);
+        ByteBuffer wrapped =
+                ByteBuffer.wrap(chunk).order(ByteOrder.LITTLE_ENDIAN);
+        return wrapped.getInt();
+    }
+
+    private byte[] extractChunk(byte[] b, int fromidx, int toidx) {
+        byte[] chunk = new byte[4];
+        System.arraycopy(b, fromidx, chunk, 0, toidx + 1 - fromidx);
+        return chunk;
+    }
+
+    private String readStringChunks(byte[] b, int fromidx, int toidx) {
+        byte[] chunk = extractChunk(b, fromidx, toidx);
+        return new String(chunk);
     }
 
     /**
@@ -107,17 +144,13 @@ public class WavFile extends AudioFile {
         boolean isSingleChannel = (noOfChannels == 1);
         double[] mergedSamples = new double[lengthForAChannel];
         double right = 0, left = 0;
-        // TODO : remove hard code if possible
-        for (int i = 44; i < fileData.length; i = i + bytesPerChannel) {
+        for (int i = dataChunkIdx; i < fileData.length; i = i + bytesPerChannel) {
             if (bytesPerChannel == 2) {
                 val = (fileData[i] & 0xFF) | (fileData[i + 1]) << 8;
-            } else if (bytesPerChannel == 4) {
-                val =
-                        (fileData[i] & 0xFF) | (fileData[i + 1]) << 8
-                                | (fileData[i + 2]) << 16
-                                | (fileData[i + 3]) << 24;
             } else if (bytesPerChannel == 1) {
-                val = (fileData[i] & 0xFF);
+                val =
+                        (fileData[i] & 0x80) > 0 ? fileData[i] + 128
+                                : fileData[i] - 128;
             } else {
                 throwException(String
                         .format(BPS_NOT_SUPPORTED, bytesPerChannel));
@@ -136,10 +169,9 @@ public class WavFile extends AudioFile {
         convertToCanonicalForm(mergedSamples);
     }
 
-
     /**
-     * To Convert the data to canonical format based on sampling rate and
-     * bit rate
+     * To Convert the data to canonical format based on sampling rate and bit
+     * rate
      * @param data
      */
     private void convertToCanonicalForm(double[] data) {
@@ -184,8 +216,8 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * To up-sample audio data by the given conversion factor
-     * Currently supports conversion factors of 2 and 4
+     * To up-sample audio data by the given conversion factor Currently supports
+     * conversion factors of 2 and 4
      * @param data - single channel audio data
      * @param conversionFactor - factor by which the sample has to be upsampled
      */
@@ -211,15 +243,15 @@ public class WavFile extends AudioFile {
         if (!riffType.equalsIgnoreCase("WAVE")) {
             return false;
         }
-        if (!dataChunk.equalsIgnoreCase("data")) {
+        if (dataChunkIdx == 0) {
             return false;
         }
-        if (noOfChannels > 2) {
+        if (noOfChannels > 2 || noOfChannels < 1) {
             return false;
         }
         return true;
     }
-    
+
     /**
      * To validate if the given file name is valid and has .wav extension
      * 

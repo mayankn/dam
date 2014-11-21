@@ -6,8 +6,9 @@ import java.util.List;
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- *          <br/>This program is used to detect audio misappropriations between
- *          the two given audio files in .wav format. The program needs to be
+ * <br/>
+ *          This program is used to detect audio misappropriations between the
+ *          two given audio files in .wav format. The program needs to be
  *          executed with the following command line parameters -f <pathname> -f
  *          <pathname> where <pathname> is a path name that ends in ".wav" for a
  *          file that already exists in the file system and is in WAVE format
@@ -33,7 +34,7 @@ public class dam {
 
     public static void main(String args[]) {
         try {
-            //Long st = System.currentTimeMillis();
+            Long st = System.currentTimeMillis();
             validateCommandLineArguments(args);
             List<AnalyzableSamples> analyzableSamples1, analyzableSamples2;
             analyzableSamples1 =
@@ -56,11 +57,11 @@ public class dam {
             if (isErrorOccured()) {
                 System.exit(1);
             }
-             //Long et = System.currentTimeMillis();
-             //System.out.println("time: " + (et - st));
+             Long et = System.currentTimeMillis();
+             System.out.println("time: " + (et - st));
         } catch (Exception e) {
-            // TODO: remove before submission
-            //e.printStackTrace();
+            //TODO: remove before submission
+            e.printStackTrace();
             String errMessage = e.getMessage();
             if (errMessage == null || errMessage.length() < 5
                     || !errMessage.substring(0, 5).equals("ERROR")) {
@@ -72,7 +73,7 @@ public class dam {
     }
 
     /**
-     *
+     * 
      * @param listOfFiles1
      * @return - list of AnalyzableSamples
      */
@@ -88,7 +89,7 @@ public class dam {
             AnalyzableSamples as =
                     AnalyzableSamplesFactory.make(af.getChannelData());
             as.setBitRate(af.getBps());
-            as.setFileName(af.getShortName());            
+            as.setFileName(af.getShortName());
             asl.add(as);
             af = null;
         }
@@ -96,10 +97,9 @@ public class dam {
     }
 
     /**
-     *
-     * @param args - list of command line arguments
-     * Description: - validates the command line arguments passed to the
-     *             program
+     * 
+     * @param args - list of command line arguments Description: - validates the
+     *            command line arguments passed to the program
      */
     private static void validateCommandLineArguments(String[] args) {
         if (args.length < 4) {

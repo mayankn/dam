@@ -8,7 +8,8 @@ import java.util.Map;
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- *          <br/>Description: This class is to represent audio sample data in a
+ * <br/>
+ *          Description: This class is to represent audio sample data in a
  *          format that facilitates perceptual comparison with data from other
  *          audio files
  * 
@@ -27,11 +28,10 @@ public abstract class AnalyzableSamples {
     private static boolean isInitialized = false;
 
     /**
-     *
+     * 
      * @param size - FFT window size
-     * @param framesize - size of the frame
-     * Description - init method used to initialize various computation
-     *                  parameters
+     * @param framesize - size of the frame Description - init method used to
+     *            initialize various computation parameters
      */
     public static void initialize(int size, int framesize) {
         samples_per_frame = framesize;
@@ -86,13 +86,6 @@ public abstract class AnalyzableSamples {
     }
 
     /**
-     * To check if two AnalyzableSamples are a match(perceptually) *
-     * @param aS2 - {@AnalyzableSamples}
-     * @return
-     */
-    public abstract boolean isMatch(AnalyzableSamples aS2);
-
-    /**
      * Returns the offset in seconds of the beginning of the matching segment
      * within the first file, along with the offset in seconds of the beginning
      * of the matching segment within the second file. If there is no match,
@@ -103,9 +96,9 @@ public abstract class AnalyzableSamples {
     public abstract double[] getMatchPositionInSeconds(AnalyzableSamples aS2);
 
     /**
-     * Description - Computes the audio fingerprint based on the chosen the
-     * fingerprinting mechanism after applying the hanning window function to
-     * the input audio in the frequency domain
+     * Description - Computes the audio fingerprint after applying the Hanning
+     * window function to audio samples contained by this instance
+     * 
      */
     private void computeFingerprint() {
         int slen = samples.length - THREE_QUARTER_SAMPLE_FRAME_SIZE;
@@ -123,10 +116,14 @@ public abstract class AnalyzableSamples {
     }
 
     /**
-     *
-     * @param input - audio samples corresponding to window size of the FFT
-     * @param start
-     * Description: applies the hanning window function
+     * 
+     * @param input - A double array in which the 'frame' corresponding to the
+     *            given start index will be stored
+     * @param start - The start index of the current 'frame'
+     * 
+     *            </br>Description: Applies the Hanning window function to the
+     *            samples chosen by start index and returns the input array
+     *            after updating it with the computed value
      */
     private void applyHannWindow(double[] input, int start) {
         int end = start + samples_per_frame + 1;
@@ -139,10 +136,9 @@ public abstract class AnalyzableSamples {
     }
 
     /**
-     * Applies the hanning window function over each sample and constructs a bit
-     * reversed array
-     * @param input the audio samples present in window size amount of data
-     * @return
+     * @param input - A double array of size 'fftsize'
+     * @return - A double array of twice the length with values store in bit
+     *         reversed order
      */
     private double[] bitReverseArray(double[] input) {
         int inputSize = input.length;
