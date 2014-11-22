@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,8 +16,7 @@ import java.util.List;
 public class dam {
 
     private static String INVALID_COMMAND_ERROR = "ERROR: Invalid command line";
-    private static String MATCH = "MATCH %s %s %.1f %.1f";
-    private static int FRAGMENT_SIZE_TO_MATCH_IN_SECONDS = 5;
+    private static String MATCH = "MATCH %s %s %.1f %.1f";    
     private static String UNEXPECTED_ERROR =
             "ERROR: An unexpected error has occured";
 
@@ -38,10 +36,10 @@ public class dam {
             validateCommandLineArguments(args);
             List<AnalyzableSamples> analyzableSamples1, analyzableSamples2;
             analyzableSamples1 =
-                    prepareListOfAnalyzableSamples(AudioFiles
+                    AnalyzableSamplesFactory.makeListOfAnalyzableSamples(AudioFiles
                             .makeAudioFilesFromArg(args[0], args[1], 1));
             analyzableSamples2 =
-                    prepareListOfAnalyzableSamples(AudioFiles
+                    AnalyzableSamplesFactory.makeListOfAnalyzableSamples(AudioFiles
                             .makeAudioFilesFromArg(args[2], args[3], 2));
 
             for (AnalyzableSamples aS1 : analyzableSamples1) {
@@ -72,29 +70,7 @@ public class dam {
         }
     }
 
-    /**
-     * 
-     * @param listOfFiles1
-     * @return - list of AnalyzableSamples
-     */
-    private static List<AnalyzableSamples> prepareListOfAnalyzableSamples(
-            AudioFile[] listOfFiles1) {
-        int duration;
-        List<AnalyzableSamples> asl = new ArrayList<AnalyzableSamples>();
-        for (AudioFile af : listOfFiles1) {
-            duration = af.getDurationInSeconds();
-            if (duration < FRAGMENT_SIZE_TO_MATCH_IN_SECONDS) {
-                continue;
-            }
-            AnalyzableSamples as =
-                    AnalyzableSamplesFactory.make(af.getChannelData());
-            as.setBitRate(af.getBps());
-            as.setFileName(af.getShortName());
-            asl.add(as);
-            af = null;
-        }
-        return asl;
-    }
+    
 
     /**
      * 

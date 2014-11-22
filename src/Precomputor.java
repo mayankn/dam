@@ -18,6 +18,7 @@ public class Precomputor {
     private static double[] tfactor;
     private static int size;
     private static int[] exp2Map = new int[17];
+    private static int frameSize;
     private static double[] hannWindow;
     private static Map<Integer, Integer> log2Map =
             new HashMap<Integer, Integer>(17);
@@ -51,9 +52,10 @@ public class Precomputor {
         tfactor[val + PS] = Math.sin(c);
     }
 
-    static void initialize(int fftsize) {
+    static void initialize(int fftsize, int fsize) {
         if (fftsize != size) {
             size = fftsize;
+            frameSize = fsize;
             preComputeFFTFactors();
             precomputeHanningWindow();
             constructBitReverseIndexArray();
@@ -65,9 +67,9 @@ public class Precomputor {
      * for a given sample corresponding to the FFT size
      */
     private static void precomputeHanningWindow() {
-        double windowFactor = twoPi / (size - 1);
-        hannWindow = new double[size];
-        for (int n = 0; n < size; n++) {
+        double windowFactor = twoPi / (frameSize - 1);
+        hannWindow = new double[frameSize];
+        for (int n = 0; n < frameSize; n++) {
             hannWindow[n] = 0.5 * (1 - Math.cos(windowFactor * n));
         }
     }

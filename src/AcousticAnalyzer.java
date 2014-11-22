@@ -6,17 +6,18 @@ import java.util.Map;
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
- *          <p/>
- *          <br/>
+ * 
+ * 
+ * <br/>
  *          Description: This Class contains static methods to extract audio
  *          finger print for every frame of the given frequency domain audio
  *          data.
  */
 public class AcousticAnalyzer {
 
-    private static final int[] BARK_SCALE = new int[] { 5, 7, 9, 12, 14, 16,
-            19, 21, 24, 26, 29, 33, 36, 39, 43, 46, 50, 54, 59, 64, 69, 74, 80,
-            86, 93, 100, 108, 116, 125, 134, 146, 157, 171, 185, 186 };
+    private static final int[] BARK_SCALE = new int[] { /* 5, 7, 9, 12, */14,
+            16, 19, 21, 24, 26, 29, 33, 36, 39, 43, 46, 50, 54, 59, 64, 69, 74,
+            80, 86, 93, 100, 108, 116, 125, 134, 146, 157, 171, 185, 186 };
 
     /**
      * @param audioSegment - An array representing the segment of audio for
@@ -110,7 +111,7 @@ public class AcousticAnalyzer {
         int counter = 0;
         double fpow = 0;
         // TODO: check
-        for (int fband = 13; fband < maxrange;) {
+        for (int fband = 12; fband < maxrange;) {
             if (fband < range) {
                 absValue =
                         Math.sqrt(Math.pow(audioSegment[fband], 2)

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -15,17 +16,18 @@ import java.util.Set;
  */
 public class AnalyzableSamplesFactory {
 
+    private static int FRAGMENT_SIZE_TO_MATCH_IN_SECONDS = 5;
     private static final int SAMPLES_PER_FRAME = 1764;
     private static final int ERROR_THRESHOLD = 5,
             FFT_WINDOW_SIZE = 2048,
-            FRAME_COUNT_FOR_5_SECONDS = 163,
-            ERROR_DENSITY = 10,
+            FRAME_COUNT_FOR_5_SECONDS = 225,
+            ERROR_DENSITY = 9,
             MIN_HASH_COLLISIONS_FOR_MATCH = ERROR_THRESHOLD
                     + (int) ((double) FRAME_COUNT_FOR_5_SECONDS / ERROR_DENSITY)
                     + 2;
 
-    private static double OFFSET_IN_SECONDS =
-            ((double) SAMPLES_PER_FRAME * 3.0) / (4.0 * 44100.0);
+    private static double OFFSET_IN_SECONDS = ((double) SAMPLES_PER_FRAME)
+            / (2 * 44100.0);
 
     static {
         AnalyzableSamples.initialize(FFT_WINDOW_SIZE, SAMPLES_PER_FRAME);
@@ -33,28 +35,32 @@ public class AnalyzableSamplesFactory {
 
     /**
      * 
-     * @param data - Array containing audio sample data
-     * @return {@AnalyzableSamples}
+     * @param listOfFiles1
+     * @return - list of AnalyzableSamples
      */
-    public static AnalyzableSamples make(double[] data) {
-        validateInputData(data);
-        return new AnalyzableSamplesForFragmentMatching(data);
+    public static List<AnalyzableSamples> makeListOfAnalyzableSamples(
+            AudioFile[] listOfFiles1) {
+        int duration;
+        List<AnalyzableSamples> asl = new ArrayList<AnalyzableSamples>();
+        for (AudioFile af : listOfFiles1) {
+            duration = af.getDurationInSeconds();
+            if (duration < FRAGMENT_SIZE_TO_MATCH_IN_SECONDS) {
+                continue;
+            }
+            AnalyzableSamples as = AnalyzableSamplesFactory.make(af);
+            as.setFileName(af.getShortName());
+            asl.add(as);
+        }
+        return asl;
     }
 
     /**
      * 
-     * @param isamples - audio samples
-     * 
-     *            </br>Description: validates the input data
+     * @param data - Array containing audio sample data
+     * @return {@AnalyzableSamples}
      */
-    private static void validateInputData(double[] isamples) {
-        if (isamples == null) {
-            throw new IllegalArgumentException();
-        }
-        if (isamples.length < FFT_WINDOW_SIZE) {
-            throw new RuntimeException(
-                    "ERROR: Insufficient samples, cannot proceed");
-        }
+    public static AnalyzableSamples make(AudioFile audioFile) {
+        return new AnalyzableSamplesForFragmentMatching(audioFile);
     }
 
     /**
@@ -66,18 +72,14 @@ public class AnalyzableSamplesFactory {
     private static class AnalyzableSamplesForFragmentMatching extends
             AnalyzableSamples {
 
-        private AnalyzableSamplesForFragmentMatching(double[] samples) {
-            super(samples);
+        private AnalyzableSamplesForFragmentMatching(AudioFile audioFile) {
+            super(audioFile);
         }
 
         @Override
         public double[] getMatchPositionInSeconds(AnalyzableSamples aS2) {
-            int errScaling = 1;
-            if (this.getBitRate() == 8 ^ aS2.getBitRate() == 8) {
-                errScaling = 5;
-            }
             return computeFragmentMatchWithTime(this.getFingerprint(),
-                    aS2.getFingerprint(), errScaling);
+                    aS2.getFingerprint());
         }
 
         /**
@@ -91,8 +93,7 @@ public class AnalyzableSamplesFactory {
          */
         private double[] computeFragmentMatchWithTime(
                 Map<Integer, List<Integer>> fp1,
-                Map<Integer, List<Integer>> fp2,
-                int errScaling) {
+                Map<Integer, List<Integer>> fp2) {
             Set<Integer> s = new HashSet<Integer>(), s2 =
                     new HashSet<Integer>();
             for (int k : fp1.keySet()) {
@@ -105,12 +106,12 @@ public class AnalyzableSamplesFactory {
                 s2.addAll(t2);
             }
             int sindex1 = -1, sindex2 = -1;
-            sindex2 = extractSequenceStartIndexForMatch(s2, errScaling);
+            sindex2 = extractSequenceStartIndexForMatch(s2);
             if (sindex2 == -1) {
                 return null;
             }
 
-            sindex1 = extractSequenceStartIndexForMatch(s, errScaling);
+            sindex1 = extractSequenceStartIndexForMatch(s);
             if (sindex1 == -1) {
                 return null;
             }
@@ -125,25 +126,22 @@ public class AnalyzableSamplesFactory {
          * @param errScaling - error scaling factor
          * @return - start time of the sequence with a hash match
          */
-        private int extractSequenceStartIndexForMatch(
-                Set<Integer> s,
-                int errScaling) {
+        private int extractSequenceStartIndexForMatch(Set<Integer> s) {
             int size = s.size();
             int errors = 0, sofar = 0, seq = 0, prevseq = 0, rindex = -1;
             Integer[] sequence = new Integer[size];
             sequence = s.toArray(sequence);
             Arrays.sort(sequence);
             // System.out.println(Arrays.asList(sequence));
-            if (sequence.length <= (MIN_HASH_COLLISIONS_FOR_MATCH / errScaling)) {
+            if (sequence.length <= MIN_HASH_COLLISIONS_FOR_MATCH) {
                 return -1;
             }
             int cleanupidx = 0;
             int[] errarr = new int[size];
             int[] diffarr = new int[size];
             int diff = 0;
-            for (int i = 0; i < sequence.length - 1; i++) {
-                if (errors >= (ERROR_THRESHOLD + (ERROR_DENSITY * errScaling * seq))) {
-                    i = i - 1;
+            for (int i = 0; i < sequence.length - 1;) {
+                if (errors >= (ERROR_THRESHOLD + (ERROR_DENSITY * seq))) {
                     sofar = sofar - diffarr[cleanupidx];
                     errors = errors - errarr[cleanupidx];
                     cleanupidx++;
@@ -163,6 +161,7 @@ public class AnalyzableSamplesFactory {
                 }
                 sofar = sofar + diff;
                 seq++;
+                i++;
             }
             if (rindex == -1)
                 return -1;

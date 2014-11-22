@@ -8,14 +8,13 @@ import java.util.Map;
  * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
- * @author: Narendran K.P
- * Description: This class converts the byte data from a valid mp3 audio file
- * into a canonical format suitable for analysis.
- * The canonical format used by the file is CD-quality audio with 16 bits per
- * sample, single channel, 44.1 Khz sampling rate represented as a double[]
- * array.
- * Prerequisites: Requires the software 'lame' to be pre-installed in the
- * path "/course/cs5500f14/bin/lame" which has to be accessible
+ * @author: Narendran K.P Description: This class converts the byte data from a
+ *          valid mp3 audio file into a canonical format suitable for analysis.
+ *          The canonical format used by the file is CD-quality audio with 16
+ *          bits per sample, single channel, 44.1 Khz sampling rate represented
+ *          as a double[] array. Prerequisites: Requires the software 'lame' to
+ *          be pre-installed in the path "/course/cs5500f14/bin/lame" which has
+ *          to be accessible
  * 
  */
 public class Mp3File extends AudioFile {
@@ -27,6 +26,7 @@ public class Mp3File extends AudioFile {
     private Mp3decoder mp3Decoder;
     private AudioFile internalRepresentation;
     private Thread conversionProcess;
+    private String fileName, shortName;
 
     static class Mp3decoder implements Runnable {
         String shortName;
@@ -83,8 +83,13 @@ public class Mp3File extends AudioFile {
 
     public Mp3File(String fName, boolean isDirectory, int paramNum)
             throws IOException {
-        super(fName, false);
-        mp3Decoder = new Mp3decoder(getShortName(), getFileName(), paramNum);
+        this.fileName = fName;
+        File f = new File(fileName);
+        if (!f.isFile()) {
+            throwException(String.format(INVALID_FILE_PATH, fileName));
+        }
+        shortName = f.getName();
+        mp3Decoder = new Mp3decoder(shortName, fileName, paramNum);
         conversionProcess = new Thread(mp3Decoder);
         conversionProcess.start();
     }
@@ -93,12 +98,6 @@ public class Mp3File extends AudioFile {
     public Map<String, Object> getHeaderData() {
         setInternalRepresentation();
         return internalRepresentation.getHeaderData();
-    }
-
-    @Override
-    public boolean areFileDurationsTheSame(AudioFile af2) {
-        setInternalRepresentation();
-        return internalRepresentation.areFileDurationsTheSame(af2);
     }
 
     @Override
@@ -126,8 +125,7 @@ public class Mp3File extends AudioFile {
     }
 
     /**
-     * Description - stores an internal representation of the converted MP3
-     * file
+     * Description - stores an internal representation of the converted MP3 file
      */
     private void setInternalRepresentation() {
         if (internalRepresentation == null) {
@@ -138,12 +136,34 @@ public class Mp3File extends AudioFile {
             }
             internalRepresentation = mp3Decoder.getConvertedFile();
             if (internalRepresentation == null)
-                throwException(String.format(UNSUPPORTED_FILE_FORMAT,
-                        getShortName()));
+                throwException(String
+                        .format(UNSUPPORTED_FILE_FORMAT, shortName));
             mp3Decoder = null;
             conversionProcess = null;
-            fileData = null;
+            // fileData = null;
         }
+    }
+
+    @Override
+    public double[] getNext(int streamingLength) {
+        setInternalRepresentation();
+        return internalRepresentation.getNext(streamingLength);
+    }
+
+    public String getShortName() {
+        return this.shortName;
+    }
+    
+    @Override
+    public boolean hasNext() {
+        setInternalRepresentation();
+        return internalRepresentation.hasNext();
+    }
+
+    @Override
+    public void close() {
+        setInternalRepresentation();
+        internalRepresentation.close();
     }
 
 }

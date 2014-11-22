@@ -1,6 +1,3 @@
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.Map;
 
 /**
@@ -31,23 +28,6 @@ public abstract class AudioFile {
             "ERROR: Unsupported sampling rate";
     public static final String BPS_NOT_SUPPORTED =
             "ERROR: Bytes per sample of %d is not supported";
-    private String fileName, shortName;
-    protected byte[] fileData;
-
-    AudioFile(String fName, boolean isFileReadNeeded) throws IOException {
-        this.fileName = fName;
-        File f = new File(fileName);
-        if (!f.isFile()) {
-            throwException(String.format(INVALID_FILE_PATH, fileName));
-        }
-        shortName = f.getName();
-        if (isFileReadNeeded) {
-            RandomAccessFile rf = new RandomAccessFile(f, "r");
-            fileData = new byte[(int) rf.length()];
-            rf.read(fileData);
-            rf.close();
-        }
-    }
 
     /**
      * To extract header data from the audio file
@@ -59,15 +39,7 @@ public abstract class AudioFile {
 
     public abstract int getBps();
 
-    /**
-     * To compare if the duration of this file and the given AudioFile af2 are
-     * the same
-     * 
-     * @param af2 - AudioFile for which the comparison has to be made against
-     * @return - true if durations are same, false otherwise
-     */
-    public abstract boolean areFileDurationsTheSame(AudioFile af2);
-
+    
     /**
      * To extract the audio sample data from the audio file
      * 
@@ -85,20 +57,16 @@ public abstract class AudioFile {
      */
     public abstract boolean isAudioFileFormatValid();
 
-    /**
-     * @return - Returns the short name of the audio file along with the file
-     *         extension
-     */
-    public String getShortName() {
-        return shortName;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
     public abstract int getDurationInSeconds();
-
+    
+    public abstract double[] getNext(int streamingLength);
+    
+    public abstract String getShortName();
+    
+    public abstract boolean hasNext();
+    
+    public abstract void close();
+   
     protected static FILE_TYPE getFileTypeFromName(String fileName) {
         int fnameLength = fileName.length();
         if (fnameLength < 4) {

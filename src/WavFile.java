@@ -1,4 +1,6 @@
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Map;
@@ -16,6 +18,11 @@ import java.util.Map;
  * 
  */
 public class WavFile extends AudioFile {
+    private static final double CANONICAL_SAMPLING_RATE = 44100;
+    private static final String CHUNK_RIFF = "RIFF";
+    private static final String CHUNK_FMT = "fmt";
+    private static final String CHUNK_DATA = "data";
+
     private double[] channelData;
     private String riffType;
     private int noOfDataBytes;
@@ -24,29 +31,81 @@ public class WavFile extends AudioFile {
     private int noOfChannels;
     private int significantBitsPerSecond;
     private int dataChunkIdx;
-    private static final double CANONICAL_SAMPLING_RATE = 44100;
-    private static final String CHUNK_RIFF = "RIFF";
-    private static final String CHUNK_FMT = "fmt";
-    private static final String CHUNK_DATA = "data";
+    private int totalDataLength;
+    private int dataLengthRead;
+    private int bytesPerChannel;
+    private int bpsAggregate;
+    private String fileName, shortName;
+    private RandomAccessFile rf;
 
     public WavFile(String fName) throws IOException {
-        super(fName, true);
-        if (fileData.length < 44) {
+        this.fileName = fName;
+        File f = new File(fileName);
+        if (!f.isFile()) {
+            throwException(String.format(INVALID_FILE_PATH, fileName));
+        }
+        shortName = f.getName();
+        rf = new RandomAccessFile(f, "r");
+        int fileLength = (int) rf.length();
+        if (fileLength < 44) {
             throwException(INSUFFICIENT_DATA);
         }
-        readHeaderChunks();
-        extractChannelData();
+        byte[] headerData = new byte[80];
+        rf.read(headerData);
+        readHeaderChunks(headerData);
+        rf.seek(dataChunkIdx);
     }
 
-    private void readHeaderChunks() {
+    public boolean hasNext() {
+        return (dataLengthRead < totalDataLength);
+    }
+
+    public double[] getNext(int streamingLength) {
+        try {
+            int bytesToBeStreamed = streamingLength * bpsAggregate;
+            int dataLeft = (totalDataLength - dataLengthRead) * bpsAggregate;
+            bytesToBeStreamed = Math.min(bytesToBeStreamed, dataLeft);
+            byte[] fileData = new byte[bytesToBeStreamed];
+            rf.read(fileData);
+            dataLengthRead = dataLengthRead + streamingLength;
+            return extractChannelData(fileData, bytesToBeStreamed
+                    / bpsAggregate);
+        } catch (IOException e) {
+            throw new RuntimeException("ERROR: Error while reading the file "
+                    + shortName);
+        }
+    }
+
+    public void close() {
+        try {
+            rf.close();
+        } catch (IOException e) {
+            throw new RuntimeException("ERROR: Error while closing the file"
+                    + shortName);
+        }
+    }
+
+    /**
+     * @return - Returns the short name of the audio file along with the file
+     *         extension
+     */
+    public String getShortName() {
+        return shortName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    private void readHeaderChunks(byte[] headerData) {
         int chunkDataSize;
         String chunkId;
         for (int idx = 0; idx < 80;) {
-            chunkId = readStringChunks(fileData, idx, idx + 3);
+            chunkId = readStringChunks(headerData, idx, idx + 3);
             if (chunkId != null) {
                 chunkId = chunkId.trim();
             }
-            chunkDataSize = extractChunkData(chunkId, idx);
+            chunkDataSize = extractChunkData(headerData, chunkId, idx);
             if (noOfDataBytes > 0) {
                 break;
             }
@@ -54,21 +113,28 @@ public class WavFile extends AudioFile {
         }
     }
 
-    private int extractChunkData(String chunkId, int idx) {
-        int chunkDataSize = readIntChunks(fileData, idx + 4, idx + 7);
+    public int getTotalDataLength() {
+        return totalDataLength;
+    }
+
+    private int extractChunkData(byte[] headerData, String chunkId, int idx) {
+        int chunkDataSize = readIntChunks(headerData, idx + 4, idx + 7);
         idx = idx + 8;
         if (CHUNK_RIFF.equalsIgnoreCase(chunkId)) {
-            riffType = readStringChunks(fileData, idx, idx + 3);
+            riffType = readStringChunks(headerData, idx, idx + 3);
             return 12;
         } else if (CHUNK_FMT.equalsIgnoreCase(chunkId)) {
-            noOfChannels = readIntChunks(fileData, idx + 2, idx + 3);
-            samplingRate = readIntChunks(fileData, idx + 4, idx + 7);
-            averageBps = readIntChunks(fileData, idx + 8, idx + 11);
+            noOfChannels = readIntChunks(headerData, idx + 2, idx + 3);
+            samplingRate = readIntChunks(headerData, idx + 4, idx + 7);
+            averageBps = readIntChunks(headerData, idx + 8, idx + 11);
             significantBitsPerSecond =
-                    readIntChunks(fileData, idx + 14, idx + 15);
+                    readIntChunks(headerData, idx + 14, idx + 15);
         } else if (CHUNK_DATA.equalsIgnoreCase(chunkId)) {
             dataChunkIdx = idx;
             noOfDataBytes = chunkDataSize;
+            bytesPerChannel = significantBitsPerSecond / 8;
+            bpsAggregate = bytesPerChannel * noOfChannels;
+            totalDataLength = noOfDataBytes / bpsAggregate;
         }
         return chunkDataSize + 8;
     }
@@ -99,19 +165,6 @@ public class WavFile extends AudioFile {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean areFileDurationsTheSame(AudioFile af2) {
-        double file1duration = getDurationInSeconds();
-        double file2duration = af2.getDurationInSeconds();
-        if (file1duration != file2duration) {
-            return false;
-        }
-        return true;
-    }
-
     public int getDurationInSeconds() {
         return (int) getFileDuration();
     }
@@ -136,15 +189,14 @@ public class WavFile extends AudioFile {
     /**
      * Converts the file data to canonical form
      */
-    private void extractChannelData() {
-        int bytesPerChannel, bpsAggregate, lengthForAChannel, idx = 0, val = 0;
-        bytesPerChannel = significantBitsPerSecond / 8;
-        bpsAggregate = bytesPerChannel * noOfChannels;
-        lengthForAChannel = noOfDataBytes / bpsAggregate;
+    private double[] extractChannelData(byte[] fileData, int channelLength) {
+        int lengthForAChannel, idx = 0, val = 0;
+        lengthForAChannel = channelLength;
         boolean isSingleChannel = (noOfChannels == 1);
         double[] mergedSamples = new double[lengthForAChannel];
         double right = 0, left = 0;
-        for (int i = dataChunkIdx; i < fileData.length; i = i + bytesPerChannel) {
+        // System.out.println("fileData.length"+fileData.length);
+        for (int i = 0; i < fileData.length; i = i + bytesPerChannel) {
             if (bytesPerChannel == 2) {
                 val = (fileData[i] & 0xFF) | (fileData[i + 1]) << 8;
             } else if (bytesPerChannel == 1) {
@@ -165,8 +217,7 @@ public class WavFile extends AudioFile {
                 mergedSamples[idx++] = (right + left) / 2;
             }
         }
-        this.fileData = null;
-        convertToCanonicalForm(mergedSamples);
+        return convertToCanonicalForm(mergedSamples);
     }
 
     /**
@@ -174,7 +225,7 @@ public class WavFile extends AudioFile {
      * rate
      * @param data
      */
-    private void convertToCanonicalForm(double[] data) {
+    private double[] convertToCanonicalForm(double[] data) {
         double conversionFactorExact = CANONICAL_SAMPLING_RATE / samplingRate;
         int conversionFactor = (int) conversionFactorExact;
         if (conversionFactorExact != 0.91875
@@ -182,11 +233,11 @@ public class WavFile extends AudioFile {
             throwException(UNSUPPORTED_SAMPLING_RATE);
         }
         if (conversionFactor == 1) {
-            this.channelData = data;
+            return data;
         } else if (conversionFactorExact == 0.91875) {
-            downSample(data, conversionFactorExact);
+            return downSample(data, conversionFactorExact);
         } else {
-            upSample(data, conversionFactor);
+            return upSample(data, conversionFactor);
         }
 
     }
@@ -196,7 +247,7 @@ public class WavFile extends AudioFile {
      * @param data
      * @param conversionFactor
      */
-    private void downSample(double[] data, double conversionFactor) {
+    private double[] downSample(double[] data, double conversionFactor) {
         int noOfSamplesOneLess = data.length - 1;
         int newlen = (int) (data.length * conversionFactor);
         double currentIndex, sampleAtRight, sampleAtLeft, slope;
@@ -212,7 +263,7 @@ public class WavFile extends AudioFile {
             downsampledData[i] =
                     slope * (currentIndex - leftIndex) + sampleAtLeft;
         }
-        this.channelData = downsampledData;
+        return downsampledData;
     }
 
     /**
@@ -221,7 +272,7 @@ public class WavFile extends AudioFile {
      * @param data - single channel audio data
      * @param conversionFactor - factor by which the sample has to be upsampled
      */
-    private void upSample(double[] data, int conversionFactor) {
+    private double[] upSample(double[] data, int conversionFactor) {
         int dataLength = data.length;
         if (conversionFactor != 2 && conversionFactor != 4) {
             throwException(UNSUPPORTED_SAMPLING_RATE);
@@ -232,7 +283,7 @@ public class WavFile extends AudioFile {
             int j = i * conversionFactor;
             upSampledData[j] = tmp;
         }
-        this.channelData = upSampledData;
+        return upSampledData;
     }
 
     /**

@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,9 @@ public abstract class AnalyzableSamples {
     private static int fftsize;
     private static int[] exp2Map;
     private static boolean isInitialized = false;
+    private AudioFile audioFile;
+    private double[] overlap;
+    int counter = 0;
 
     /**
      * 
@@ -39,7 +43,7 @@ public abstract class AnalyzableSamples {
         THREE_QUARTER_SAMPLE_FRAME_SIZE =
                 samples_per_frame + HALF_SAMPLE_FRAME_SIZE;
         fftsize = size;
-        Precomputor.initialize(fftsize);
+        Precomputor.initialize(fftsize, samples_per_frame);
         bitReverseArray = Precomputor.getBitReverseIndex();
         preFactors = Precomputor.getPrecomputedFactors();
         exp2Map = Precomputor.getExpMap();
@@ -48,29 +52,27 @@ public abstract class AnalyzableSamples {
         isInitialized = true;
     }
 
-    private double[] samples;
     private String fileName;
     private Map<Integer, List<Integer>> fingerprint =
             new HashMap<Integer, List<Integer>>();
     private int slen, bitRate;
 
-    protected AnalyzableSamples(double[] samples) {
+    protected AnalyzableSamples(AudioFile aFile) {
         if (!isInitialized) {
             throw new RuntimeException(
-                    "ERROR: the class must be initialized before use");
+                    "ERROR: This class must be initialized before use");
         }
-        this.samples = samples;
-        computeFingerprint();
-        freeMemory();
+        audioFile = aFile;
+        int streamingLength = samples_per_frame * 800;
+        while (audioFile.hasNext()) {
+            computeFingerprint(audioFile.getNext(streamingLength));
+            // computeFingerprintWithoutOverlap(audioFile.getNext(streamingLength));
+        }
+        audioFile.close();
     }
 
     public int getSampleLength() {
         return slen;
-    }
-
-    private void freeMemory() {
-        // to free memory
-        samples = null;
     }
 
     public Map<Integer, List<Integer>> getFingerprint() {
@@ -100,18 +102,39 @@ public abstract class AnalyzableSamples {
      * window function to audio samples contained by this instance
      * 
      */
-    private void computeFingerprint() {
-        int slen = samples.length - THREE_QUARTER_SAMPLE_FRAME_SIZE;
-        int counter = 0;
+    private void computeFingerprint(double[] data) {
         double[] input = new double[fftsize];
+
+        if (overlap != null) {
+            double[] newdata = new double[data.length + samples_per_frame];
+            System.arraycopy(overlap, 0, newdata, 0, samples_per_frame);
+            System.arraycopy(data, 0, newdata, samples_per_frame, data.length);
+            data = newdata;
+        }
+        int slen = data.length - THREE_QUARTER_SAMPLE_FRAME_SIZE;
         for (int i = 0; i < slen;) {
-            applyHannWindow(input, i);
+            applyHannWindow(data, input, i);
             AcousticAnalyzer.updateFingerprintForGivenSamples(
                     performFFT(input), counter++, fingerprint);
-            applyHannWindow(input, i + HALF_SAMPLE_FRAME_SIZE);
+            applyHannWindow(data, input, i + HALF_SAMPLE_FRAME_SIZE);
             AcousticAnalyzer.updateFingerprintForGivenSamples(
                     performFFT(input), counter++, fingerprint);
-            i = i + THREE_QUARTER_SAMPLE_FRAME_SIZE;
+            i = i + samples_per_frame;
+        }
+        overlap =
+                Arrays.copyOfRange(data, data.length - samples_per_frame,
+                        data.length);
+    }
+
+    private void computeFingerprintWithoutOverlap(double[] data) {
+        double[] input = new double[fftsize];
+
+        int slen = data.length;
+        for (int i = 0; i < slen - samples_per_frame;) {
+            applyHannWindow(data, input, i);
+            AcousticAnalyzer.updateFingerprintForGivenSamples(
+                    performFFT(input), counter++, fingerprint);
+            i = i + samples_per_frame;
         }
     }
 
@@ -125,10 +148,10 @@ public abstract class AnalyzableSamples {
      *            samples chosen by start index and returns the input array
      *            after updating it with the computed value
      */
-    private void applyHannWindow(double[] input, int start) {
-        int end = start + samples_per_frame + 1;
+    private void applyHannWindow(double[] data, double[] input, int start) {
+        int end = start + samples_per_frame;
         for (int i = start, j = 0; i < end; i++, j++) {
-            input[j] = samples[i] * hannWindow[j];
+            input[j] = data[i] * hannWindow[j];
         }
         for (int i = samples_per_frame; i < fftsize; i++) {
             input[i] = 0;
