@@ -1,22 +1,22 @@
 import java.util.List;
 
 /**
+ * 
+ * This program is used to detect audio misappropriations between the two given
+ * audio files in .wav format. The program needs to be executed with the
+ * following command line parameters -f <pathname> -f <pathname> where
+ * <pathname> is a path name that ends in ".wav" for a file that already exists
+ * in the file system and is in WAVE format with CD-quality parameters
+ * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- * <br/>
- *          This program is used to detect audio misappropriations between the
- *          two given audio files in .wav format. The program needs to be
- *          executed with the following command line parameters -f <pathname> -f
- *          <pathname> where <pathname> is a path name that ends in ".wav" for a
- *          file that already exists in the file system and is in WAVE format
- *          with CD-quality parameters
  */
 public class dam {
 
     private static String INVALID_COMMAND_ERROR = "ERROR: Invalid command line";
-    private static String MATCH = "MATCH %s %s %.1f %.1f";    
+    private static String MATCH = "MATCH %s %s %.1f %.1f";
     private static String UNEXPECTED_ERROR =
             "ERROR: An unexpected error has occured";
 
@@ -36,11 +36,13 @@ public class dam {
             validateCommandLineArguments(args);
             List<AnalyzableSamples> analyzableSamples1, analyzableSamples2;
             analyzableSamples1 =
-                    AnalyzableSamplesFactory.makeListOfAnalyzableSamples(AudioFiles
-                            .makeAudioFilesFromArg(args[0], args[1], 1));
+                    AnalyzableSamplesFactory
+                            .makeListOfAnalyzableSamples(AudioFiles
+                                    .makeAudioFilesFromArg(args[0], args[1], 1));
             analyzableSamples2 =
-                    AnalyzableSamplesFactory.makeListOfAnalyzableSamples(AudioFiles
-                            .makeAudioFilesFromArg(args[2], args[3], 2));
+                    AnalyzableSamplesFactory
+                            .makeListOfAnalyzableSamples(AudioFiles
+                                    .makeAudioFilesFromArg(args[2], args[3], 2));
 
             for (AnalyzableSamples aS1 : analyzableSamples1) {
                 for (AnalyzableSamples aS2 : analyzableSamples2) {
@@ -55,10 +57,10 @@ public class dam {
             if (isErrorOccured()) {
                 System.exit(1);
             }
-             Long et = System.currentTimeMillis();
-             System.out.println("time: " + (et - st));
+            Long et = System.currentTimeMillis();
+            System.out.println("time: " + (et - st));
         } catch (Exception e) {
-            //TODO: remove before submission
+            // TODO: remove before submission
             e.printStackTrace();
             String errMessage = e.getMessage();
             if (errMessage == null || errMessage.length() < 5
@@ -70,12 +72,10 @@ public class dam {
         }
     }
 
-    
-
     /**
+     * Validates the command line arguments passed to the program
      * 
-     * @param args - list of command line arguments Description: - validates the
-     *            command line arguments passed to the program
+     * @param args - an array of command line arguments
      */
     private static void validateCommandLineArguments(String[] args) {
         if (args.length < 4) {

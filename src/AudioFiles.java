@@ -3,22 +3,27 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
+ * This is an abstract class that contains static factory methods to instantiate
+ * an instance or a collection of {@AudioFile} based on the input
+ * parameters
+ * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
- * Description: This is an abstract class to handle and instantiate all the
- * supported audio file formats appropriately
+ * 
  */
 
 public abstract class AudioFiles {
 
-
     /**
-     *
-     * @param flag
-     * @param fpath
-     * @param paramNum
-     * @return - list of AudioFile instances
+     * Makes an array of {@AudioFile} based on the given parameters
+     * 
+     * @param flag - indicates if the given fpath is a directory or a file, '-f'
+     *            -> file, '-d' -> directory
+     * @param fpath - file path including the file name, or a file directory
+     * @param paramNum - the sub-folder of the temporary path to which the
+     *            temporary file(s) if any must be written to
+     * @return - an array of {@AudioFile}
      * @throws IOException
      * @throws InterruptedException
      */
@@ -30,7 +35,7 @@ public abstract class AudioFiles {
         if ("-f".equals(flag)) {
             listOfFiles2 =
                     new AudioFile[] { AudioFiles.makeAudioFileByExtension(
-                            fpath, paramNum, false) };
+                            fpath, paramNum) };
         } else {
             listOfFiles2 =
                     AudioFiles.makeAllAudioFilesInDirectory(fpath, paramNum);
@@ -39,26 +44,29 @@ public abstract class AudioFiles {
     }
 
     /**
-     *
-     * @param fileName
-     * @param paramNum
-     * @param isDirectory
-     * @return - an AudioFile instance created from the input file path
+     * Makes a single instance of {@AudioFile} based on the file
+     * extension from the given file name. If the file extension is of a format
+     * that is not supported, throws a RuntimeException
+     * 
+     * @param fileName - file name including the extension
+     * @param paramNum - the sub-folder folder to which the temporarily created
+     *            files will be stored
+     * @return - an {@AudioFile} instance created from the input
+     *         file path
      * @throws IOException
      * @throws InterruptedException
      */
     public static AudioFile makeAudioFileByExtension(
             String fileName,
-            int paramNum,
-            boolean isDirectory) throws IOException, InterruptedException {
+            int paramNum) throws IOException, InterruptedException {
         AudioFile.FILE_TYPE ftype = AudioFile.getFileTypeFromName(fileName);
         AudioFile af = null;
         if (ftype == AudioFile.FILE_TYPE.MP3) {
-            af = new Mp3File(fileName, isDirectory, paramNum);
+            af = new Mp3File(fileName, paramNum);
         } else if (ftype == AudioFile.FILE_TYPE.WAV) {
             af = new WavFile(fileName);
         } else if (ftype == AudioFile.FILE_TYPE.OGG) {
-        	af = new OggFile(fileName, isDirectory, paramNum);
+            af = new OggFile(fileName, paramNum);
         } else {
             throw new RuntimeException(AudioFile.UNSUPPORTED_FILE_FORMAT);
         }
@@ -66,10 +74,15 @@ public abstract class AudioFiles {
     }
 
     /**
-     *
-     * @param dirName
-     * @param paramNum
-     * @return - a list of AudioFile instances created from the input directory
+     * Makes an array of {@AudioFile} for all the files of supported
+     * file type that are present in the given file directory. If there are any
+     * files of unsupported format or if there are other sub-directories, the
+     * method prints an error message and sets the exit status to -1
+     * 
+     * @param dirName - directory name
+     * @param paramNum - sub-folder under which the temporary files created by
+     *            the program must be stored
+     * @return - an array of {@AudioFile} created based on the input
      * @throws IOException
      * @throws InterruptedException
      */
@@ -94,7 +107,7 @@ public abstract class AudioFiles {
                 audioFiles[idx++] =
                         AudioFiles.makeAudioFileByExtension(
                                 fi.getAbsolutePath() + File.separator + f,
-                                paramNum, true);
+                                paramNum);
             } catch (Exception e) {
                 idx--;
                 errcount++;

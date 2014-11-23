@@ -1,5 +1,3 @@
-import java.util.Map;
-
 /**
  * 
  * @author: Magesh Ramachandran
@@ -28,14 +26,6 @@ public abstract class AudioFile {
             "ERROR: Unsupported sampling rate";
     public static final String BPS_NOT_SUPPORTED =
             "ERROR: Bytes per sample of %d is not supported";
-
-    /**
-     * To extract header data from the audio file
-     * 
-     * @return - Map containing the key-value pair of header info, where the
-     *         value is an Object representing a String or an Integer
-     */
-    public abstract Map<String, Object> getHeaderData();
 
     /**
      * To get the bits per second of the audio file

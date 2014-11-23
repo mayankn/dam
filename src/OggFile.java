@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Map;
 
 /**
  * <p>
@@ -85,7 +84,7 @@ public class OggFile extends AudioFile {
         }
     }
 
-    public OggFile(String fName, boolean isDirectory, int paramNum)
+    public OggFile(String fName , int paramNum)
             throws IOException {
         this.fileName = fName;
         File f = new File(fileName);
@@ -96,12 +95,6 @@ public class OggFile extends AudioFile {
         oggDecoder = new OggDecoder(shortName, fileName, paramNum);
         conversionProcess = new Thread(oggDecoder);
         conversionProcess.start();
-    }
-
-    @Override
-    public Map<String, Object> getHeaderData() {
-        setInternalRepresentation();
-        return internalRepresentation.getHeaderData();
     }
 
     @Override

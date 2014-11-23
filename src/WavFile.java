@@ -3,18 +3,17 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Map;
 
 /**
  * 
+ * This class converts the given audio sample with related byte data into
+ * suitable canonical form that is used for analysis. The canonical form is a
+ * CD-quality 16-bit PCM audio wav format with 44.1 Khz sampling rate,
+ * represented as a double[] array.
+ * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
- * @author: Narendran K.P
- * 
- *          </br> Description: This class converts the given audio sample with
- *          related byte data into suitable canonical form that is used for
- *          analysis. The canonical form is a CD-quality 16-bit PCM audio wav
- *          format with 44.1 Khz sampling rate, represented as a double[] array.
+ * @author: Narendran K.P * 
  * 
  */
 public class WavFile extends AudioFile {
@@ -155,14 +154,6 @@ public class WavFile extends AudioFile {
     private String readStringChunks(byte[] b, int fromidx, int toidx) {
         byte[] chunk = extractChunk(b, fromidx, toidx);
         return new String(chunk);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Map<String, Object> getHeaderData() {
-        return null;
     }
 
     public int getDurationInSeconds() {
