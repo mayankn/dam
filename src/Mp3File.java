@@ -47,6 +47,7 @@ public class Mp3File extends AudioFile {
         public void run() {
             try {
                 String convertedFileName = null;
+                boolean hasErrorOccured = false;
                 String nameWithWavExtension =
                         shortName.replaceAll("(.mp3)$", ".wav");
                 convertedFileName =
@@ -61,9 +62,16 @@ public class Mp3File extends AudioFile {
                 BufferedReader reader =
                         new BufferedReader(new InputStreamReader(
                                 proc.getInputStream()));
-                while (reader.readLine() != null) {
+                String str;
+                while ((str = reader.readLine()) != null) {
+                    if (str.contains("Error:")) {
+                        hasErrorOccured = true;
+                    }
                 }
                 reader.close();
+                if (hasErrorOccured) {
+                    return;
+                }
                 try {
                     proc.waitFor();
                 } catch (InterruptedException ie) {

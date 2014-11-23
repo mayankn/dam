@@ -68,3 +68,19 @@ echo "./dam -d /course/cs4500f14/Assignments/A6/D4 -d /course/cs4500f14/Assignme
 ./dam -d /course/cs4500f14/Assignments/A6/D4 -d /course/cs4500f14/Assignments/A6/D5
 echo "./dam -d /home/naren90/Public/DMix -d /home/naren90/Public/DMix"
 ./dam -d /home/naren90/Public/DMix -d /home/naren90/Public/DMix
+
+# invalid inputs
+echo "./dam -f ../wrong/mp3_wrong_extn.wav -f ../wrong/mp3_wrong_extn.wav"
+./dam -f ../wrong/mp3_wrong_extn.wav -f ../wrong/mp3_wrong_extn.wav
+echo "./dam -f ../wrong/wav_wrong_extn.mp3 -f ../wrong/wav_wrong_extn.mp3"
+./dam -f ../wrong/wav_wrong_extn.mp3 -f ../wrong/wav_wrong_extn.mp3
+echo "./dam -f ../wrong/wav_wrong_extn.ogg -f ../wrong/wav_wrong_extn.ogg"
+./dam -f ../wrong/wav_wrong_extn.ogg -f ../wrong/wav_wrong_extn.ogg
+echo "./dam -f ../wrong/3.txt -f ../wrong/3.txt"
+./dam -f ../wrong/3.txt -f ../wrong/3.txt
+echo "./dam -f ../wrong/invalid_mp3.mp3 -f ../wrong/invalid_mp3.mp3"
+./dam -f ../wrong/invalid_mp3.mp3 -f ../wrong/invalid_mp3.mp3
+echo "./dam -f ../wrong/invalid_wav.wav -f ../wrong/invalid_wav.wav"
+./dam -f ../wrong/invalid_wav.wav -f ../wrong/invalid_wav.wav
+echo "./dam -f ../wrong/invalid_ogg.ogg -f ../wrong/invalid_ogg.ogg"
+./dam -f ../wrong/invalid_ogg.ogg -f ../wrong/invalid_ogg.ogg
