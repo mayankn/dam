@@ -68,7 +68,7 @@ public abstract class AudioFile {
      *         which each value represents a sample from the canonicalized
      *         format of audio samples encapsulated by this instance. The method
      *         may return an array of size < streamingLength if there are not
-     *         enough samples in the encapsulated audio
+     *         enough unread samples in the encapsulated audio
      */
     public abstract double[] getNext(int streamingLength);
 
@@ -117,6 +117,11 @@ public abstract class AudioFile {
         }
     }
 
+    /**
+     * Convenience method to throw a RuntimeException encapsulating the given
+     * message
+     * @param message
+     */
     protected static void throwException(String message) {
         throw new RuntimeException(message);
     }

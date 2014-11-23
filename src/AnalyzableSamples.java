@@ -202,12 +202,12 @@ public abstract class AnalyzableSamples {
      * in Introduction to Algorithms - Third Edition
      * <p>
      * Enhancements: As this method is invoked repeatedly for a fixed size
-     * input, all the common computations are precomputed and stored in arrays.
+     * input, all the common computations are retrieved from a cache.
      * 
      * @param samples - samples[i] -> real component, samples[i + fftsize] ->
-     *            imaginary component
-     * @return double[] : ft[i] -> real component, ft[i + fftsize] -> imaginary
-     *         component
+     *            imaginary component, where 0< i < fftsize
+     * @return double[] : ft[j] -> real component, ft[j + fftsize] -> imaginary
+     *         component, where 0< j < fftsize
      * 
      */
     private double[] performFFT(double[] samples) {

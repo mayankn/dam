@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This Class contains static methods to extract audio finger print for every
+ * This Class contains static methods to extract sub-fingerprint hash for every
  * frame of the given frequency domain audio data
  * 
  * @author: Magesh Ramachandran
@@ -19,13 +19,17 @@ public class AcousticAnalyzer {
 
     /**
      * 
-     * This method computes the fingerprint for the given segment of audio by
-     * calculating a hash based on the frequency components corresponding to the
-     * signal with the peak amplitude for several predefined frequency ranges
-     * and stores the same in the given hash map
+     * This method computes a sub-fingerprint for the given segment of frequency
+     * domain data by calculating a hash based on the frequency components
+     * corresponding to the peak amplitude for several predefined frequency
+     * ranges and stores the same in the given hash map along with the given
+     * time component as the value (in a list). If the hash map already contains
+     * the hash computed as a key, updates the given time component in the list
+     * of values for the same key
      * 
-     * @param audioSegment - an array representing the segment of audio for
-     *            which the fingerprint has to be computed
+     * 
+     * @param audioSegment - an array representing a segment of frequency domain
+     *            data for which the fingerprint has to be computed
      * 
      * @param sttime - a number representing the relative time of occurrence of
      *            the given audio segment
@@ -90,12 +94,16 @@ public class AcousticAnalyzer {
     }
 
     /**
-     * This method computes the fingerprint for the given segment of audio by
-     * computing the delta of the average power in the frequency sub-bands
-     * defined by the Bark Scale and stores the same in the given hash map
+     * This method computes a sub-fingerprint for the given segment of frequency
+     * domain data by computing the delta of the average power between several
+     * consecutive frequency sub-bands defined by the Bark Scale and stores the
+     * same in the given hash map along with the given time component as the
+     * value (in a list). If the hash map already contains the hash computed as
+     * a key, updates the given time component in the list of values for the
+     * same key
      * 
-     * @param audioSegment - An array representing the segment of audio for
-     *            which the fingerprint has to be computed
+     * @param audioSegment - An array representing a segment of frequency domain
+     *            data for which the fingerprint has to be computed
      * 
      * @param sttime - A number representing the relative time of occurrence of
      *            the given audio segment
@@ -160,7 +168,7 @@ public class AcousticAnalyzer {
 
     /**
      * Computes the hash code by calculating the delta between each array
-     * elements of the given input array
+     * consecutive elements of the given input array
      * 
      * @return - Hash computed by calculating the delta between each array
      *         elements of the given input array

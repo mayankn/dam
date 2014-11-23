@@ -77,7 +77,8 @@ public abstract class AudioFiles {
      * Makes an array of {@AudioFile} for all the files of supported
      * file type that are present in the given file directory. If there are any
      * files of unsupported format or if there are other sub-directories, the
-     * method prints an error message and sets the exit status to -1
+     * method prints an error message and sets the exit status of the main
+     * program to -1
      * 
      * @param dirName - directory name
      * @param paramNum - sub-folder under which the temporary files created by

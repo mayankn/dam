@@ -30,6 +30,8 @@ public class AnalyzableSamplesFactory {
     private static double OFFSET_IN_SECONDS = ((double) SAMPLES_PER_FRAME)
             / (2 * 44100.0);
 
+    // configures the AnalyzableSamples class, so that it can be use for a given
+    // FFT size and a given length of analysis frame
     static {
         AnalyzableSamples.initialize(FFT_WINDOW_SIZE, SAMPLES_PER_FRAME);
     }
@@ -40,6 +42,7 @@ public class AnalyzableSamplesFactory {
      * files in order to facilitate perceptual comparison.
      * 
      * @param listOfFiles - a list of {@AudioFile} to be analyzed
+     * 
      * @return - list of {@AnalyzableSamples} that
      *         facilitates perceptual comparison of each audio file in the given
      *         list
@@ -61,8 +64,8 @@ public class AnalyzableSamplesFactory {
     }
 
     /**
-     * static factory method to make new instances of {@AnalyzableSamples
-     * }
+     * static factory method to make new {@AnalyzableSamles}
+     * instances
      * 
      * @param audioFile - an {@AudioFile} to be analyzed
      * @return {@AnalyzableSamples} that facilitates
@@ -74,7 +77,8 @@ public class AnalyzableSamplesFactory {
 
     /**
      * This implementation is used for representing audio samples in way that
-     * facilitates perceptual comparison
+     * facilitates perceptual comparison of segments that are 5 seconds or
+     * longer
      * 
      */
     private static class AnalyzableSamplesForFragmentMatching extends
@@ -142,8 +146,42 @@ public class AnalyzableSamplesFactory {
 
         /**
          * To identify the presence of a sequence of values corresponding to a 5
-         * second or longer matches along with the time of occurrence of the
-         * sequence if any
+         * second or longer intervals along with the time of occurrence of such
+         * sequence if any.
+         * 
+         * Algorithm: the technique looks for a continuity in the given sequence
+         * of numbers so that the relative time difference between start and end
+         * values of the sequence is equal to are greater than 5 seconds. If
+         * there are many such discontinuous sequences, keeps track of the
+         * longest such sequence so far.
+         * <p>
+         * 1) sorts the values in the input set in ascending order
+         * <p>
+         * 2) traverses the list from an anchor point (starts with the first
+         * element), if the difference between consecutive values is 1, the no
+         * error is accumulated, otherwise the difference is added to errors
+         * <p>
+         * 3) step 2 is repeated as long as the error remains below the
+         * threshold.
+         * <p>
+         * 4) if the error exceeds the threshold, the anchor point is moved to
+         * the next element in the sequence and the error corresponding to the
+         * particular element is removed from the accumulated errors
+         * <p>
+         * 5) step 4 is repeated till the error value drops below the threshold.
+         * <p>
+         * 6) steps 2-5 are repeated till the program reaches the end of
+         * sequence.
+         * <p>
+         * 7) between steps 2-6, the algorithm keeps track of difference between
+         * the element corresponding to the current index and the anchor point.
+         * If the difference is greater that the value corresponding to 5
+         * seconds and if the sequence count is greater than any such sequence
+         * encountered so far, remembers the start index (anchor point)
+         * corresponding to the sequence. At the end if no such sequence is
+         * found , returns a -1. otherwise returns the value corresponding to
+         * the anchor point of the sequence
+         * 
          * 
          * @param s - set of values representing time offsets from the beginning
          * @return - starting value of a sequence that corresponds to a 5 second
