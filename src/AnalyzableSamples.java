@@ -4,18 +4,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * This class is to represent audio sample data in a format that facilitates
+ * perceptual comparison with data from other audio files
  * 
  * @author: Magesh
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- * <br/>
- *          Description: This class is to represent audio sample data in a
- *          format that facilitates perceptual comparison with data from other
- *          audio files
  * 
  */
 public abstract class AnalyzableSamples {
+    private static final String ERROR_UNINIIALIZED_CLASS =
+            "ERROR: This class must be initialized before use";
+
     private static Map<Integer, Integer> log2Map =
             new HashMap<Integer, Integer>(17);
     private static int samples_per_frame;
@@ -29,13 +30,20 @@ public abstract class AnalyzableSamples {
     private static boolean isInitialized = false;
     private AudioFile audioFile;
     private double[] overlap;
-    int counter = 0;
+    private int counter = 0;
+
+    private String fileName;
+    private Map<Integer, List<Integer>> fingerprint =
+            new HashMap<Integer, List<Integer>>();
+    private int slen, bitRate;
 
     /**
+     * Initializes the pre-computed factors based on the size of FFT window and
+     * the framesize that represents the aggregation of audio samples that are
+     * analyzed together as a 'frame'
      * 
      * @param size - FFT window size
-     * @param framesize - size of the frame Description - init method used to
-     *            initialize various computation parameters
+     * @param framesize -The number of samples analyzed together as a frame
      */
     public static void initialize(int size, int framesize) {
         samples_per_frame = framesize;
@@ -52,15 +60,9 @@ public abstract class AnalyzableSamples {
         isInitialized = true;
     }
 
-    private String fileName;
-    private Map<Integer, List<Integer>> fingerprint =
-            new HashMap<Integer, List<Integer>>();
-    private int slen, bitRate;
-
     protected AnalyzableSamples(AudioFile aFile) {
         if (!isInitialized) {
-            throw new RuntimeException(
-                    "ERROR: This class must be initialized before use");
+            throw new RuntimeException(ERROR_UNINIIALIZED_CLASS);
         }
         audioFile = aFile;
         int streamingLength = samples_per_frame * 800;
@@ -92,14 +94,23 @@ public abstract class AnalyzableSamples {
      * within the first file, along with the offset in seconds of the beginning
      * of the matching segment within the second file. If there is no match,
      * returns a null
-     * @param aS2
-     * @return
+     * 
+     * @param aS2 - {@AnalyzableSamples} object which
+     *            encapsulates the audio file to be compared with
+     * @return - a double[2], where,
      */
     public abstract double[] getMatchPositionInSeconds(AnalyzableSamples aS2);
 
     /**
-     * Description - Computes the audio fingerprint after applying the Hanning
-     * window function to audio samples contained by this instance
+     * Computes and updates the acoustic fingerprint for a segment of streaming
+     * audio after applying the Hanning window function to the individual
+     * analysis frames. The method computes FFT for these analysis frames with
+     * 50% overlap, and updates the fingerprint of each of these frames to the
+     * main fingerprint corresponding to the source audio file encapsulated by
+     * this instance
+     * 
+     * @param data - A segment of audio samples belonging to this instance for
+     *            which the fingerprint is to be updated
      * 
      */
     private void computeFingerprint(double[] data) {
@@ -126,6 +137,18 @@ public abstract class AnalyzableSamples {
                         data.length);
     }
 
+    /**
+     * Computes and updates the acoustic fingerprint for a segment of streaming
+     * audio after applying the Hanning window function to the individual
+     * analysis frames. The method computes FFT for these analysis frames
+     * without overlap and updates the fingerprint of each of these frames to
+     * the main fingerprint corresponding of the source audio file encapsulated
+     * by this instance
+     * 
+     * @param data - A segment of audio samples belonging to this instance for
+     *            which the fingerprint is to be updated
+     * 
+     */
     private void computeFingerprintWithoutOverlap(double[] data) {
         double[] input = new double[fftsize];
 
@@ -139,14 +162,13 @@ public abstract class AnalyzableSamples {
     }
 
     /**
+     * Applies the Hanning window function to the samples chosen by start index
+     * and returns the input array after updating it with the computed value
      * 
      * @param input - A double array in which the 'frame' corresponding to the
      *            given start index will be stored
      * @param start - The start index of the current 'frame'
      * 
-     *            </br>Description: Applies the Hanning window function to the
-     *            samples chosen by start index and returns the input array
-     *            after updating it with the computed value
      */
     private void applyHannWindow(double[] data, double[] input, int start) {
         int end = start + samples_per_frame;
@@ -159,9 +181,12 @@ public abstract class AnalyzableSamples {
     }
 
     /**
+     * This is a helper method used to prepare the bit reversed array needed by
+     * the non-recursive FFT implementation
+     * 
      * @param input - A double array of size 'fftsize'
-     * @return - A double array of twice the length with values store in bit
-     *         reversed order
+     * @return - A double array of twice the length as input with values store
+     *         in bit reversed order
      */
     private double[] bitReverseArray(double[] input) {
         int inputSize = input.length;
@@ -175,6 +200,9 @@ public abstract class AnalyzableSamples {
     /**
      * Non recursive FFT - Translated by Magesh, Mayank, Naren from Pseudocode
      * in Introduction to Algorithms - Third Edition
+     * <p>
+     * Enhancements: As this method is invoked repeatedly for a fixed size
+     * input, all the common computations are precomputed and stored in arrays.
      * 
      * @param samples - samples[i] -> real component, samples[i + fftsize] ->
      *            imaginary component
@@ -182,7 +210,6 @@ public abstract class AnalyzableSamples {
      *         component
      * 
      */
-
     private double[] performFFT(double[] samples) {
         int size = samples.length;
         int depth = log2Map.get(samples.length);
@@ -219,10 +246,20 @@ public abstract class AnalyzableSamples {
         return brArr;
     }
 
+    /**
+     * Returns the bit rate of the audio file encapsulated by this instance
+     * 
+     * @return bitRate
+     */
     public int getBitRate() {
         return bitRate;
     }
 
+    /**
+     * Setter for the bit rate of the audio file encapsulated by this instance
+     * 
+     * @param bitRate
+     */
     public void setBitRate(int bitRate) {
         this.bitRate = bitRate;
     }

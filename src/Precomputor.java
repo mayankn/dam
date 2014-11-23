@@ -2,13 +2,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * This class pre-computes all the reused computations needed by the iterative
+ * FFT algorithm along with the window function
+ * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
- * Description: This class efficiently pre-computes all the redundant and
- * repetitive
- * computations needed by the FFT algorithm on each sample corresponding to
- * the size of the FFT window
+ * 
  */
 public class Precomputor {
     private static final int PS = 17;
@@ -23,6 +23,7 @@ public class Precomputor {
     private static Map<Integer, Integer> log2Map =
             new HashMap<Integer, Integer>(17);
 
+    // Performs preliminary pre-computations and creates a map of log values
     static {
         tfactor = new double[PS << 1];
         intMaps(1, 0);
@@ -44,6 +45,7 @@ public class Precomputor {
          */
     }
 
+    // Performs preliminary pre-computations
     static void intMaps(int key, int val) {
         log2Map.put(key, val);
         exp2Map[val] = key;
@@ -52,6 +54,8 @@ public class Precomputor {
         tfactor[val + PS] = Math.sin(c);
     }
 
+    // To initialize the values of fft size and analysis window size for
+    // which the pre-computations are made
     static void initialize(int fftsize, int fsize) {
         if (fftsize != size) {
             size = fftsize;
@@ -63,8 +67,9 @@ public class Precomputor {
     }
 
     /**
-     * Description - pre-computes the values of the hanning window function
-     * for a given sample corresponding to the FFT size
+     * Pre-computes the values of the Hanning window function for a window
+     * length specified by frameSize
+     * 
      */
     private static void precomputeHanningWindow() {
         double windowFactor = twoPi / (frameSize - 1);
@@ -74,6 +79,15 @@ public class Precomputor {
         }
     }
 
+    /**
+     * Pre-computes the reused computations used by the non-recursive FFT
+     * algorithm and stores the values in a static double array preFactors which
+     * can be used as a cache. All the reused computations needed for an FFT of
+     * input count 'size' is computed by the method. The real components are
+     * stored in preFactors[i] and the imaginary components are stores in
+     * prefactors[i+size] where 0 < i < size
+     * 
+     */
     private static void preComputeFFTFactors() {
         try {
             int depth = log2Map.get(size);
@@ -109,7 +123,10 @@ public class Precomputor {
     }
 
     /**
-     * Description - Constructs a bit reversed array of the size of FFT window
+     * Description - Constructs a map of bit reversed indexes. The value at
+     * every index corresponds to the corresponding bit-reversed index. This
+     * method computes the bit reversed indexes for the number of values
+     * specified by the size instance variable
      */
     private static void constructBitReverseIndexArray() {
         int expVal = log2Map.get(size);
@@ -120,22 +137,42 @@ public class Precomputor {
         }
     }
 
+    /**
+     * 
+     * @return
+     */
     public static double[] getPrecomputedFactors() {
         return preFactors;
     }
 
+    /**
+     * 
+     * @return
+     */
     public static int[] getBitReverseIndex() {
         return bitReverseArray;
     }
 
+    /**
+     * 
+     * @return
+     */
     public static int[] getExpMap() {
         return exp2Map;
     }
 
+    /**
+     * 
+     * @return
+     */
     public static Map<Integer, Integer> getLogMap() {
         return log2Map;
     }
 
+    /**
+     * 
+     * @return
+     */
     public static double[] getHannWindow() {
         return hannWindow;
     }

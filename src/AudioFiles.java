@@ -57,6 +57,8 @@ public abstract class AudioFiles {
             af = new Mp3File(fileName, isDirectory, paramNum);
         } else if (ftype == AudioFile.FILE_TYPE.WAV) {
             af = new WavFile(fileName);
+        } else if (ftype == AudioFile.FILE_TYPE.OGG) {
+        	af = new OggFile(fileName, isDirectory, paramNum);
         } else {
             throw new RuntimeException(AudioFile.UNSUPPORTED_FILE_FORMAT);
         }

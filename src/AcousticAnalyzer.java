@@ -3,15 +3,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * This Class contains static methods to extract audio finger print for every
+ * frame of the given frequency domain audio data
+ * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- * 
- * <br/>
- *          Description: This Class contains static methods to extract audio
- *          finger print for every frame of the given frequency domain audio
- *          data.
  */
 public class AcousticAnalyzer {
 
@@ -20,17 +18,22 @@ public class AcousticAnalyzer {
             80, 86, 93, 100, 108, 116, 125, 134, 146, 157, 171, 185, 186 };
 
     /**
-     * @param audioSegment - An array representing the segment of audio for
-     *            which the fingerprint has to be computed
-     * @param sttime - A number representing the relative time of occurrence of
-     *            the given audio segment
-     * @param fingerprint - hash map of the main sequence processed so far into
-     *            which the new fingerprint computed will be stored
      * 
-     *            </br>Description: This method computes the fingerprint for the
-     *            given segment of audio by extracting the frequency components
-     *            with the highest power belonging to predefined bands and
-     *            stores the same in the given hash map
+     * This method computes the fingerprint for the given segment of audio by
+     * calculating a hash based on the frequency components corresponding to the
+     * signal with the peak amplitude for several predefined frequency ranges
+     * and stores the same in the given hash map
+     * 
+     * @param audioSegment - an array representing the segment of audio for
+     *            which the fingerprint has to be computed
+     * 
+     * @param sttime - a number representing the relative time of occurrence of
+     *            the given audio segment
+     * 
+     * @param fingerprint - the hash map of the main sequence processed so far
+     *            into which the new fingerprint computed will be stored
+     * 
+     * 
      */
     public static void updateFingerprintForGivenSamples1(
             double[] audioSegment,
@@ -87,17 +90,20 @@ public class AcousticAnalyzer {
     }
 
     /**
+     * This method computes the fingerprint for the given segment of audio by
+     * computing the delta of the average power in the frequency sub-bands
+     * defined by the Bark Scale and stores the same in the given hash map
+     * 
      * @param audioSegment - An array representing the segment of audio for
      *            which the fingerprint has to be computed
+     * 
      * @param sttime - A number representing the relative time of occurrence of
      *            the given audio segment
+     * 
      * @param fingerprint - hash map of the main sequence processed so far into
      *            which the new fingerprint computed will be stored
      * 
-     *            </br>Description: This method computes the fingerprint for the
-     *            given segment of audio by computing the delta of the average
-     *            power in the frequency sub-bands defined by the Bark Scale and
-     *            stores the same in the given hash map
+     * 
      */
     public static void updateFingerprintForGivenSamples(
             double[] audioSegment,
@@ -141,11 +147,11 @@ public class AcousticAnalyzer {
     }
 
     /**
+     * Computes a hash code by combining the bits of all the input bytes
+     * 
      * @return - Hash computed from the by combining the bits in all of the
      *         given input bytes.
      * 
-     *         </br>Description: Computes a hash code by combining the bits of
-     *         all the input bytes
      */
     private static int bitwiseHash(byte fp1, byte fp2, byte fp3, byte fp4) {
         int hash = (fp1 & 0xFF) | fp2 << 8 | fp3 << 16 | fp4 << 24;
@@ -153,18 +159,18 @@ public class AcousticAnalyzer {
     }
 
     /**
-     * @param bandPower
+     * Computes the hash code by calculating the delta between each array
+     * elements of the given input array
+     * 
      * @return - Hash computed by calculating the delta between each array
      *         elements of the given input array
      * 
-     *         </br>Description: Computes the hash code by calculating the delta
-     *         between each array elements of the given input array
      * 
      */
-    private static int bitwiseHash(double[] bandPower) {
+    private static int bitwiseHash(double[] input) {
         int hash = Integer.MAX_VALUE;
-        for (int i = 1; i < bandPower.length; i++) {
-            if (bandPower[i - 1] < bandPower[i]) {
+        for (int i = 1; i < input.length; i++) {
+            if (input[i - 1] < input[i]) {
                 hash = (hash & ~(1 << i));
             }
         }
