@@ -146,11 +146,11 @@ public class AnalyzableSamplesFactory {
             for (int i = 0; i < slen;) {
                 applyHannWindow(data, input, i);
                 AcousticAnalyzer
-                        .updateFingerprintForGivenSamplesUsingPhilipsTechnique(
+                        .updateFingerprintForGivenSamplesUsingAverageDeltaPowerDiff(
                                 performFFT(input), counter++, fingerprint);
                 applyHannWindow(data, input, i + half_sample_frame_size);
                 AcousticAnalyzer
-                        .updateFingerprintForGivenSamplesUsingPhilipsTechnique(
+                        .updateFingerprintForGivenSamplesUsingAverageDeltaPowerDiff(
                                 performFFT(input), counter++, fingerprint);
                 i = i + SAMPLES_PER_FRAME;
             }
@@ -229,7 +229,7 @@ public class AnalyzableSamplesFactory {
             for (int i = 0; i < slen;) {
                 applyHannWindow(data, input, i);
                 AcousticAnalyzer
-                        .updateFingerprintForGivenSamplesUsingPhilipsTechnique(
+                        .updateFingerprintForGivenSamplesUsingAverageDeltaPowerDiff(
                                 performFFT(input), counter++, fingerprint);
                 i = i + SAMPLES_PER_FRAME;
             }

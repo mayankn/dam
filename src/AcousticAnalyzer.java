@@ -113,7 +113,7 @@ public class AcousticAnalyzer {
      * 
      * 
      */
-    public static void updateFingerprintForGivenSamplesUsingPhilipsTechnique(
+    public static void updateFingerprintForGivenSamplesUsingAverageDeltaPowerDiff(
             double[] audioSegment,
             int sttime,
             Map<Integer, List<Integer>> fingerprint) {
