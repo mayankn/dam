@@ -14,7 +14,7 @@ import java.io.InputStreamReader;
  * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
- * @author: Narendran K.P*
+ * @author: Narendran K.P
  * 
  */
 public class Mp3File extends AudioFile {
@@ -28,6 +28,12 @@ public class Mp3File extends AudioFile {
     private Thread conversionProcess;
     private String fileName, shortName;
 
+    /**
+     * This class contains logic to handle the conversion of a valid mp3 file to
+     * a wav file. If the given mp3 file of a format that is not supported, no
+     * wav file will be created.
+     * 
+     */
     static class Mp3decoder implements Runnable {
         String shortName;
         String fileName;
@@ -40,10 +46,20 @@ public class Mp3File extends AudioFile {
             this.paramNum = paramNum;
         }
 
+        /**
+         * To get a reference to the converted file which is wrapped as a
+         * {@AudioFile}
+         * 
+         * @return {@AudioFile}
+         */
         public AudioFile getConvertedFile() {
             return this.convertedFile;
         }
 
+        /**
+         * This method is intended to be executed by a java Thread. Contains
+         * logic to handle the conversion process.
+         */
         public void run() {
             try {
                 String convertedFileName = null;
@@ -90,8 +106,7 @@ public class Mp3File extends AudioFile {
         }
     }
 
-    public Mp3File(String fName, int paramNum)
-            throws IOException {
+    public Mp3File(String fName, int paramNum) throws IOException {
         this.fileName = fName;
         File f = new File(fileName);
         if (!f.isFile()) {
@@ -103,24 +118,33 @@ public class Mp3File extends AudioFile {
         conversionProcess.start();
     }
 
-    @Override
-    public double[] getChannelData() {
-        setInternalRepresentation();
-        return internalRepresentation.getChannelData();
-    }
-
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#isAudioFileFormatValid()
+     */
     @Override
     public boolean isAudioFileFormatValid() {
         setInternalRepresentation();
         return internalRepresentation.isAudioFileFormatValid();
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#getDurationInSeconds()
+     */
     @Override
     public int getDurationInSeconds() {
         setInternalRepresentation();
         return internalRepresentation.getDurationInSeconds();
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#getBps()
+     */
     @Override
     public int getBps() {
         setInternalRepresentation();
@@ -128,7 +152,11 @@ public class Mp3File extends AudioFile {
     }
 
     /**
-     * Stores an internal representation of the converted MP3 file
+     * Waits for the conversionProcess to complete. If the conversion process is
+     * complete, obtains the internal representation of the mp3 file from the
+     * decoder and sets it to an instance variable. Nullifies references to the
+     * objects used for conversion to free up memory as they are no longer
+     * needed.
      */
     private void setInternalRepresentation() {
         if (internalRepresentation == null) {
@@ -143,26 +171,45 @@ public class Mp3File extends AudioFile {
                         .format(UNSUPPORTED_FILE_FORMAT, shortName));
             mp3Decoder = null;
             conversionProcess = null;
-            // fileData = null;
         }
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#getNext(int)
+     */
     @Override
     public double[] getNext(int streamingLength) {
         setInternalRepresentation();
         return internalRepresentation.getNext(streamingLength);
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#getShortName()
+     */
     public String getShortName() {
         return this.shortName;
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#hasNext()
+     */
     @Override
     public boolean hasNext() {
         setInternalRepresentation();
         return internalRepresentation.hasNext();
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#close()
+     */
     @Override
     public void close() {
         setInternalRepresentation();

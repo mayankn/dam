@@ -3,7 +3,7 @@ import java.util.List;
 /**
  * 
  * This program is used to detect audio misappropriations between the two given
- * audio files in .wav format. The program needs to be executed with the
+ * audio files in  format. The program needs to be executed with the
  * following command line parameters -f <pathname> -f <pathname> where
  * <pathname> is a path name that ends in ".wav" for a file that already exists
  * in the file system and is in WAVE format with CD-quality parameters
@@ -35,6 +35,7 @@ public class dam {
             Long st = System.currentTimeMillis();
             validateCommandLineArguments(args);
             List<AnalyzableSamples> analyzableSamples1, analyzableSamples2;
+            AnalyzableSamplesFactory.setMode(AnalyzableSamplesFactory.MODES.FAST);
             analyzableSamples1 =
                     AnalyzableSamplesFactory
                             .makeListOfAnalyzableSamples(AudioFiles

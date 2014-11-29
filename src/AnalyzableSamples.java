@@ -1,7 +1,9 @@
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is to represent audio sample data in a format that facilitates
@@ -11,7 +13,6 @@ import java.util.Map;
  * @author: Mayank Narashiman
  * @author: Narendran K.P
  * 
- * 
  */
 public abstract class AnalyzableSamples {
     private static final String ERROR_UNINIIALIZED_CLASS =
@@ -20,38 +21,53 @@ public abstract class AnalyzableSamples {
     private static Map<Integer, Integer> log2Map =
             new HashMap<Integer, Integer>(17);
     private static int samples_per_frame;
-    private static int HALF_SAMPLE_FRAME_SIZE;
-    private static int THREE_QUARTER_SAMPLE_FRAME_SIZE;
     private static int[] bitReverseArray;
     private static double[] preFactors;
     private static double[] hannWindow;
     private static int fftsize;
     private static int[] exp2Map;
     private static boolean isInitialized = false;
-    private AudioFile audioFile;
-    private double[] overlap;
-    private int counter = 0;
+    private static int error_threshold, frame_count_for_5_seconds,
+            min_hash_collisions_for_match;
+    private static double offset_in_seconds, error_density;
 
     private String fileName;
-    private Map<Integer, List<Integer>> fingerprint =
-            new HashMap<Integer, List<Integer>>();
+
     private int slen, bitRate;
 
     /**
-     * Initializes the pre-computed factors based on the size of FFT window and
-     * the framesize that represents the aggregation of audio samples that are
+     * 
+     * Gets the pre-computed factors for the given size of FFT window and the
+     * framesize which represents the aggregation of audio samples that are
      * analyzed together as a 'frame'
      * 
      * @param size - FFT window size
      * @param framesize -The number of samples analyzed together as a frame
+     * @param errorDensity - the error density that will be used by the matching
+     *            algorithm
+     * @param errThreshold - the initial error threshold that will be used by
+     *            the matching algorithm
+     * @param frameCountForMatch - number of sequential frames needed for a
+     *            match
+     * @param offsetInSeconds - fraction of time represented by a frame
      */
-    public static void initialize(int size, int framesize) {
+    public static void initialize(
+            int size,
+            int framesize,
+            double errorDensity,
+            int errThreshold,
+            int frameCountForMatch,
+            double offsetInSeconds) {
         samples_per_frame = framesize;
-        HALF_SAMPLE_FRAME_SIZE = samples_per_frame / 2;
-        THREE_QUARTER_SAMPLE_FRAME_SIZE =
-                samples_per_frame + HALF_SAMPLE_FRAME_SIZE;
+        error_threshold = errThreshold;
+        frame_count_for_5_seconds = frameCountForMatch;
+        error_density = errorDensity;
+        min_hash_collisions_for_match =
+                error_threshold
+                        + (int) ((double) frame_count_for_5_seconds / error_density)
+                        + 2;
+        offset_in_seconds = offsetInSeconds;
         fftsize = size;
-        Precomputor.initialize(fftsize, samples_per_frame);
         bitReverseArray = Precomputor.getBitReverseIndex();
         preFactors = Precomputor.getPrecomputedFactors();
         exp2Map = Precomputor.getExpMap();
@@ -60,33 +76,11 @@ public abstract class AnalyzableSamples {
         isInitialized = true;
     }
 
-    protected AnalyzableSamples(AudioFile aFile) {
+    // constructor
+    protected AnalyzableSamples() {
         if (!isInitialized) {
             throw new RuntimeException(ERROR_UNINIIALIZED_CLASS);
         }
-        audioFile = aFile;
-        int streamingLength = samples_per_frame * 800;
-        while (audioFile.hasNext()) {
-            computeFingerprint(audioFile.getNext(streamingLength));
-            // computeFingerprintWithoutOverlap(audioFile.getNext(streamingLength));
-        }
-        audioFile.close();
-    }
-
-    public int getSampleLength() {
-        return slen;
-    }
-
-    public Map<Integer, List<Integer>> getFingerprint() {
-        return this.fingerprint;
-    }
-
-    public void setFileName(String fname) {
-        this.fileName = fname;
-    }
-
-    public String getFileName() {
-        return this.fileName;
     }
 
     /**
@@ -98,67 +92,10 @@ public abstract class AnalyzableSamples {
      * @param aS2 - {@AnalyzableSamples} object which
      *            encapsulates the audio file to be compared with
      * @return - a double[2], where,
-     */
-    public abstract double[] getMatchPositionInSeconds(AnalyzableSamples aS2);
-
-    /**
-     * Computes and updates the acoustic fingerprint for a segment of streaming
-     * audio after applying the Hanning window function to the individual
-     * analysis frames. The method computes FFT for these analysis frames with
-     * 50% overlap, and updates the fingerprint of each of these frames to the
-     * main fingerprint corresponding to the source audio file encapsulated by
-     * this instance
-     * 
-     * @param data - A segment of audio samples belonging to this instance for
-     *            which the fingerprint is to be updated
-     * 
-     */
-    private void computeFingerprint(double[] data) {
-        double[] input = new double[fftsize];
-
-        if (overlap != null) {
-            double[] newdata = new double[data.length + samples_per_frame];
-            System.arraycopy(overlap, 0, newdata, 0, samples_per_frame);
-            System.arraycopy(data, 0, newdata, samples_per_frame, data.length);
-            data = newdata;
-        }
-        int slen = data.length - THREE_QUARTER_SAMPLE_FRAME_SIZE;
-        for (int i = 0; i < slen;) {
-            applyHannWindow(data, input, i);
-            AcousticAnalyzer.updateFingerprintForGivenSamples(
-                    performFFT(input), counter++, fingerprint);
-            applyHannWindow(data, input, i + HALF_SAMPLE_FRAME_SIZE);
-            AcousticAnalyzer.updateFingerprintForGivenSamples(
-                    performFFT(input), counter++, fingerprint);
-            i = i + samples_per_frame;
-        }
-        overlap =
-                Arrays.copyOfRange(data, data.length - samples_per_frame,
-                        data.length);
-    }
-
-    /**
-     * Computes and updates the acoustic fingerprint for a segment of streaming
-     * audio after applying the Hanning window function to the individual
-     * analysis frames. The method computes FFT for these analysis frames
-     * without overlap and updates the fingerprint of each of these frames to
-     * the main fingerprint corresponding of the source audio file encapsulated
-     * by this instance
-     * 
-     * @param data - A segment of audio samples belonging to this instance for
-     *            which the fingerprint is to be updated
-     * 
-     */
-    private void computeFingerprintWithoutOverlap(double[] data) {
-        double[] input = new double[fftsize];
-
-        int slen = data.length;
-        for (int i = 0; i < slen - samples_per_frame;) {
-            applyHannWindow(data, input, i);
-            AcousticAnalyzer.updateFingerprintForGivenSamples(
-                    performFFT(input), counter++, fingerprint);
-            i = i + samples_per_frame;
-        }
+     */    
+    public double[] getMatchPositionInSeconds(AnalyzableSamples aS2) {
+        return computeFragmentMatchWithTime(this.getFingerprint(),
+                aS2.getFingerprint());
     }
 
     /**
@@ -170,7 +107,7 @@ public abstract class AnalyzableSamples {
      * @param start - The start index of the current 'frame'
      * 
      */
-    private void applyHannWindow(double[] data, double[] input, int start) {
+    protected void applyHannWindow(double[] data, double[] input, int start) {
         int end = start + samples_per_frame;
         for (int i = start, j = 0; i < end; i++, j++) {
             input[j] = data[i] * hannWindow[j];
@@ -210,7 +147,7 @@ public abstract class AnalyzableSamples {
      *         component, where 0< j < fftsize
      * 
      */
-    private double[] performFFT(double[] samples) {
+    protected double[] performFFT(double[] samples) {
         int size = samples.length;
         int depth = log2Map.get(samples.length);
         int hsize = size;
@@ -247,6 +184,125 @@ public abstract class AnalyzableSamples {
     }
 
     /**
+     * 
+     * @param fp1 - HashMap representing a fingerprint
+     * @param fp2 - HashMap representing another fingerprint
+     * @return - If there is a match, returns an array of two elements with each
+     *         element representing the time at which the match was found.
+     *         Otherwise, returns a null value.
+     */
+    protected double[] computeFragmentMatchWithTime(
+            Map<Integer, List<Integer>> fp1,
+            Map<Integer, List<Integer>> fp2) {
+        Set<Integer> s = new HashSet<Integer>(), s2 = new HashSet<Integer>();
+        for (int k : fp1.keySet()) {
+            List<Integer> t1 = fp1.get(k);
+            List<Integer> t2 = fp2.get(k);
+            if (t2 == null) {
+                continue;
+            }
+            s.addAll(t1);
+            s2.addAll(t2);
+        }
+        int sindex1 = -1, sindex2 = -1;
+        sindex2 = extractSequenceStartIndexForMatch(s2);
+        if (sindex2 == -1) {
+            return null;
+        }
+
+        sindex1 = extractSequenceStartIndexForMatch(s);
+        if (sindex1 == -1) {
+            return null;
+        }
+
+        return new double[] { (offset_in_seconds * sindex1),
+                (offset_in_seconds * sindex2) };
+    }
+
+    /**
+     * To identify the presence of a sequence of values corresponding to a 5
+     * second or longer intervals along with the time of occurrence of such
+     * sequence if any.
+     * 
+     * Algorithm: the technique looks for a continuity in the given sequence of
+     * numbers so that the relative time difference between start and end values
+     * of the sequence is equal to are greater than 5 seconds. If there are many
+     * such discontinuous sequences, keeps track of the longest such sequence so
+     * far.
+     * <p>
+     * 1) sorts the values in the input set in ascending order
+     * <p>
+     * 2) traverses the list from an anchor point (starts with the first
+     * element), if the difference between consecutive values is 1, the no error
+     * is accumulated, otherwise the difference is added to errors
+     * <p>
+     * 3) step 2 is repeated as long as the error remains below the threshold.
+     * <p>
+     * 4) if the error exceeds the threshold, the anchor point is moved to the
+     * next element in the sequence and the error corresponding to the
+     * particular element is removed from the accumulated errors
+     * <p>
+     * 5) step 4 is repeated till the error value drops below the threshold.
+     * <p>
+     * 6) steps 2-5 are repeated till the program reaches the end of sequence.
+     * <p>
+     * 7) between steps 2-6, the algorithm keeps track of difference between the
+     * element corresponding to the current index and the anchor point. If the
+     * difference is greater that the value corresponding to 5 seconds and if
+     * the sequence count is greater than any such sequence encountered so far,
+     * remembers the start index (anchor point) corresponding to the sequence.
+     * At the end if no such sequence is found , returns a -1. otherwise returns
+     * the value corresponding to the anchor point of the sequence
+     * 
+     * 
+     * @param s - set of values representing time offsets from the beginning
+     * @return - starting value of a sequence that corresponds to a 5 second
+     *         match. Returns -1 if no such sequence is found
+     */
+    private int extractSequenceStartIndexForMatch(Set<Integer> s) {
+        int size = s.size();
+        int errors = 0, sofar = 0, seq = 0, prevseq = 0, rindex = -1;
+        Integer[] sequence = new Integer[size];
+        sequence = s.toArray(sequence);
+        Arrays.sort(sequence);
+        // System.out.println(Arrays.asList(sequence));
+        if (sequence.length <= min_hash_collisions_for_match) {
+            return -1;
+        }
+        int cleanupidx = 0;
+        int[] errarr = new int[size];
+        int[] diffarr = new int[size];
+        int diff = 0;
+        for (int i = 0; i < sequence.length - 1;) {
+            if (errors >= (error_threshold + (error_density * seq))) {
+                sofar = sofar - diffarr[cleanupidx];
+                errors = errors - errarr[cleanupidx];
+                cleanupidx++;
+                seq = seq - 1;
+                continue;
+            } else if (sofar > frame_count_for_5_seconds) {
+                if (seq > prevseq) {
+                    prevseq = seq;
+                    rindex = Math.max(i - seq, 0);
+                }
+            }
+            diff = sequence[i + 1] - sequence[i];
+            diffarr[i] = diff;
+            if (diff > 1) {
+                errors = errors + diff;
+                errarr[i] = diff;
+            }
+            sofar = sofar + diff;
+            seq++;
+            i++;
+        }
+        if (rindex == -1)
+            return -1;
+        else
+            return sequence[rindex];
+    }
+
+    /**
      * Returns the bit rate of the audio file encapsulated by this instance
      * 
      * @return bitRate
@@ -262,6 +318,36 @@ public abstract class AnalyzableSamples {
      */
     public void setBitRate(int bitRate) {
         this.bitRate = bitRate;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public int getSampleLength() {
+        return slen;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public abstract Map<Integer, List<Integer>> getFingerprint();
+
+    /**
+     * 
+     * @param fname
+     */
+    public void setFileName(String fname) {
+        this.fileName = fname;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public String getFileName() {
+        return this.fileName;
     }
 
 }

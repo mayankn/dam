@@ -80,11 +80,11 @@ public class Precomputor {
     }
 
     /**
-     * Pre-computes the reused computations used by the non-recursive FFT
-     * algorithm and stores the values in a static double array preFactors which
-     * can be used as a cache. All the reused computations needed for an FFT of
-     * input count 'size' is computed by the method. The real components are
-     * stored in preFactors[i] and the imaginary components are stores in
+     * Pre-computes the redundant computations in a non-recursive FFT algorithm
+     * and stores the values in a static double[] preFactors which can be used
+     * as a cache. All the reused computations needed for an FFT of input count
+     * 'size' is computed by the method. The real components are stored in
+     * preFactors[i] and the imaginary components are stores in
      * prefactors[i+size] where 0 < i < size
      * 
      */
@@ -123,7 +123,7 @@ public class Precomputor {
     }
 
     /**
-     * Description - Constructs a map of bit reversed indexes. The value at
+     * Constructs a map of bit reversed indexes. The value at
      * every index corresponds to the corresponding bit-reversed index. This
      * method computes the bit reversed indexes for the number of values
      * specified by the size instance variable

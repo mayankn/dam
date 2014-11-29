@@ -30,6 +30,12 @@ public class OggFile extends AudioFile {
     private Thread conversionProcess;
     private String fileName, shortName;
 
+    /**
+     * This class contains logic to handle the conversion of a valid .Ogg file
+     * to a .wav file. If the given .Ogg file is of a format that is not
+     * supported, no .wav file will be created.
+     * 
+     */
     static class OggDecoder implements Runnable {
         String shortName;
         String fileName;
@@ -42,10 +48,20 @@ public class OggFile extends AudioFile {
             this.paramNum = paramNum;
         }
 
+        /**
+         * To get a reference to the converted file which is wrapped as a
+         * {@AudioFile}
+         * 
+         * @return {@AudioFile}
+         */
         public AudioFile getConvertedFile() {
             return this.convertedFile;
         }
 
+        /**
+         * This method is intended to be executed by a java Thread. Contains
+         * logic to handle the conversion process.
+         */
         public void run() {
             try {
                 String convertedFileName = null;
@@ -92,8 +108,7 @@ public class OggFile extends AudioFile {
         }
     }
 
-    public OggFile(String fName , int paramNum)
-            throws IOException {
+    public OggFile(String fName, int paramNum) throws IOException {
         this.fileName = fName;
         File f = new File(fileName);
         if (!f.isFile()) {
@@ -105,24 +120,33 @@ public class OggFile extends AudioFile {
         conversionProcess.start();
     }
 
-    @Override
-    public double[] getChannelData() {
-        setInternalRepresentation();
-        return internalRepresentation.getChannelData();
-    }
-
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#isAudioFileFormatValid()
+     */
     @Override
     public boolean isAudioFileFormatValid() {
         setInternalRepresentation();
         return internalRepresentation.isAudioFileFormatValid();
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#getDurationInSeconds()
+     */
     @Override
     public int getDurationInSeconds() {
         setInternalRepresentation();
         return internalRepresentation.getDurationInSeconds();
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#getBps()
+     */
     @Override
     public int getBps() {
         setInternalRepresentation();
@@ -130,7 +154,11 @@ public class OggFile extends AudioFile {
     }
 
     /**
-     * Description - stores an internal representation of the converted MP3 file
+     * Waits for the conversionProcess to complete. If the conversion process is
+     * complete, obtains the internal representation of the .Ogg file from
+     * the decoder and sets it to an instance variable. Nullifies references to
+     * the objects used for conversion to free up memory as they are no longer
+     * needed.
      */
     private void setInternalRepresentation() {
         if (internalRepresentation == null) {
@@ -145,26 +173,45 @@ public class OggFile extends AudioFile {
                         .format(UNSUPPORTED_FILE_FORMAT, shortName));
             oggDecoder = null;
             conversionProcess = null;
-            // fileData = null;
         }
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#getNext(int)
+     */
     @Override
     public double[] getNext(int streamingLength) {
         setInternalRepresentation();
         return internalRepresentation.getNext(streamingLength);
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#getShortName()
+     */
     public String getShortName() {
         return this.shortName;
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#hasNext()
+     */
     @Override
     public boolean hasNext() {
         setInternalRepresentation();
         return internalRepresentation.hasNext();
     }
 
+    /**
+     * This method delegates the call to its internal representation which is a
+     * {@WavFile}
+     * @see AudioFile#close()
+     */
     @Override
     public void close() {
         setInternalRepresentation();

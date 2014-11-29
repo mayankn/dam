@@ -39,7 +39,7 @@ public class AcousticAnalyzer {
      * 
      * 
      */
-    public static void updateFingerprintForGivenSamples1(
+    public static void updateFingerprintForGivenSamplesUsingMaxPeak(
             double[] audioSegment,
             int sttime,
             Map<Integer, List<Integer>> fingerprint) {
@@ -113,7 +113,7 @@ public class AcousticAnalyzer {
      * 
      * 
      */
-    public static void updateFingerprintForGivenSamples(
+    public static void updateFingerprintForGivenSamplesUsingPhilipsTechnique(
             double[] audioSegment,
             int sttime,
             Map<Integer, List<Integer>> fingerprint) {

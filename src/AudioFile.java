@@ -6,6 +6,8 @@
  * 
  */
 public abstract class AudioFile {
+
+    // An enumeration of the file types supported by the program
     public enum FILE_TYPE {
         MP3, WAV, OGG
     };
@@ -26,21 +28,52 @@ public abstract class AudioFile {
             "ERROR: Unsupported sampling rate";
     public static final String BPS_NOT_SUPPORTED =
             "ERROR: Bytes per sample of %d is not supported";
+    public static final String ERROR_READING_FILE =
+            "ERROR: Error while reading the file %s";
+
+    
+    /**
+     * To verify if the given input is of a format supported by the program
+     * based on the file extension. If the file is of a valid format, returns an
+     * ENUM representing the corresponding file type. Otherwise, throws a
+     * RuntimeException
+     * @param fileName - a file name with extension as a String
+     * @return {@FILE_TYPE}
+     */
+    protected static FILE_TYPE getFileTypeFromName(String fileName) {
+        int fnameLength = fileName.length();
+        if (fnameLength < 4) {
+            throw new RuntimeException(String.format(UNSUPPORTED_FILE_FORMAT,
+                    fileName));
+        }
+        if (fileName.substring(fnameLength - 4, fnameLength).equals(".wav")) {
+            return FILE_TYPE.WAV;
+        } else if (fileName.substring(fnameLength - 4, fnameLength).equals(
+                ".mp3")) {
+            return FILE_TYPE.MP3;
+        } else if (fileName.substring(fnameLength - 4, fnameLength).equals(
+                ".ogg")) {
+            return FILE_TYPE.OGG;
+        } else {
+            throw new RuntimeException(String.format(UNSUPPORTED_FILE_FORMAT,
+                    fileName));
+        }
+    }
+
+    /**
+     * Convenience method to throw a RuntimeException encapsulating the given
+     * text message
+     * @param message
+     */
+    protected static void throwException(String message) {
+        throw new RuntimeException(message);
+    }
 
     /**
      * To get the bits per second of the audio file
      * @return - bits per second of the audio file
      */
     public abstract int getBps();
-
-    /**
-     * To extract the audio sample data from the audio file
-     * 
-     * @return - array containing average amplitude for all samples of left +
-     *         right channels for 2 channel audio, or samples of unmodified
-     *         amplitude for single channel audio
-     */
-    public abstract double[] getChannelData();
 
     /**
      * To validate if the audio file is of the correct format as specified by
@@ -88,42 +121,5 @@ public abstract class AudioFile {
      * To close the audio file encapsulated by this instance
      */
     public abstract void close();
-
-    /**
-     * To verify if the given input is of a format supported by the program
-     * based on the file extension. If the file is of a valid format, returns an
-     * ENUM representing the corresponding file type. Otherwise, throws a
-     * RuntimeException
-     * @param fileName - a file name with extension as a String
-     * @return {@FILE_TYPE}
-     */
-    protected static FILE_TYPE getFileTypeFromName(String fileName) {
-        int fnameLength = fileName.length();
-        if (fnameLength < 4) {
-            throw new RuntimeException(String.format(UNSUPPORTED_FILE_FORMAT,
-                    fileName));
-        }
-        if (fileName.substring(fnameLength - 4, fnameLength).equals(".wav")) {
-            return FILE_TYPE.WAV;
-        } else if (fileName.substring(fnameLength - 4, fnameLength).equals(
-                ".mp3")) {
-            return FILE_TYPE.MP3;
-        } else if (fileName.substring(fnameLength - 4, fnameLength).equals(
-                ".ogg")) {
-            return FILE_TYPE.OGG;
-        } else {
-            throw new RuntimeException(String.format(UNSUPPORTED_FILE_FORMAT,
-                    fileName));
-        }
-    }
-
-    /**
-     * Convenience method to throw a RuntimeException encapsulating the given
-     * message
-     * @param message
-     */
-    protected static void throwException(String message) {
-        throw new RuntimeException(message);
-    }
-
+    
 }

@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 
 /**
  * 
@@ -13,7 +14,7 @@ import java.nio.ByteOrder;
  * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
- * @author: Narendran K.P * 
+ * @author: Narendran K.P *
  * 
  */
 public class WavFile extends AudioFile {
@@ -22,7 +23,6 @@ public class WavFile extends AudioFile {
     private static final String CHUNK_FMT = "fmt";
     private static final String CHUNK_DATA = "data";
 
-    private double[] channelData;
     private String riffType;
     private int noOfDataBytes;
     private int averageBps;
@@ -36,6 +36,10 @@ public class WavFile extends AudioFile {
     private int bpsAggregate;
     private String fileName, shortName;
     private RandomAccessFile rf;
+    private FileChannel ch;
+    byte[] fileData;
+    ByteBuffer byteBufferForStreaming;
+    boolean isFirstOrLastAccess = true;
 
     public WavFile(String fName) throws IOException {
         this.fileName = fName;
@@ -45,14 +49,18 @@ public class WavFile extends AudioFile {
         }
         shortName = f.getName();
         rf = new RandomAccessFile(f, "r");
-        int fileLength = (int) rf.length();
+        int fileLength = (int) f.length();
         if (fileLength < 44) {
             throwException(INSUFFICIENT_DATA);
         }
+
         byte[] headerData = new byte[80];
         rf.read(headerData);
         readHeaderChunks(headerData);
+        ch = rf.getChannel();
         rf.seek(dataChunkIdx);
+        // mb = ch.map(MapMode.READ_ONLY, dataChunkIdx, ch.size() -
+        // dataChunkIdx);
     }
 
     public boolean hasNext() {
@@ -60,40 +68,39 @@ public class WavFile extends AudioFile {
     }
 
     public double[] getNext(int streamingLength) {
-        try {
-            int bytesToBeStreamed = streamingLength * bpsAggregate;
-            int dataLeft = (totalDataLength - dataLengthRead) * bpsAggregate;
-            bytesToBeStreamed = Math.min(bytesToBeStreamed, dataLeft);
-            byte[] fileData = new byte[bytesToBeStreamed];
-            rf.read(fileData);
-            dataLengthRead = dataLengthRead + streamingLength;
-            return extractChannelData(fileData, bytesToBeStreamed
-                    / bpsAggregate);
-        } catch (IOException e) {
-            throw new RuntimeException("ERROR: Error while reading the file "
-                    + shortName);
+        int extractLen = streamingLength;
+        int bytesToBeStreamed = streamingLength * bpsAggregate;
+        int dataLeft = (totalDataLength - dataLengthRead) * bpsAggregate;
+        if (bytesToBeStreamed > dataLeft) {
+            bytesToBeStreamed = dataLeft;
+            extractLen = bytesToBeStreamed / bpsAggregate;
+            isFirstOrLastAccess = true;
         }
+        if (isFirstOrLastAccess) {
+            fileData = new byte[bytesToBeStreamed];
+            byteBufferForStreaming = ByteBuffer.wrap(fileData);
+            isFirstOrLastAccess = false;
+        }
+        byteBufferForStreaming.clear();
+        // mb.get(fileData);
+        try {
+            ch.read(byteBufferForStreaming);
+        } catch (Exception e) {
+
+        }
+        dataLengthRead = dataLengthRead + streamingLength;
+        return extractChannelData(fileData, extractLen);
+
     }
 
     public void close() {
         try {
+            ch.close();
             rf.close();
         } catch (IOException e) {
             throw new RuntimeException("ERROR: Error while closing the file"
                     + shortName);
         }
-    }
-
-    /**
-     * @return - Returns the short name of the audio file along with the file
-     *         extension
-     */
-    public String getShortName() {
-        return shortName;
-    }
-
-    public String getFileName() {
-        return fileName;
     }
 
     private void readHeaderChunks(byte[] headerData) {
@@ -110,10 +117,6 @@ public class WavFile extends AudioFile {
             }
             idx = idx + chunkDataSize;
         }
-    }
-
-    public int getTotalDataLength() {
-        return totalDataLength;
     }
 
     private int extractChunkData(byte[] headerData, String chunkId, int idx) {
@@ -156,33 +159,11 @@ public class WavFile extends AudioFile {
         return new String(chunk);
     }
 
-    public int getDurationInSeconds() {
-        return (int) getFileDuration();
-    }
-
-    private double getFileDuration() {
-        return noOfDataBytes / averageBps;
-    }
-
-    @Override
-    public int getBps() {
-        return significantBitsPerSecond;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public double[] getChannelData() {
-        return this.channelData;
-    }
-
     /**
      * Converts the file data to canonical form
      */
-    private double[] extractChannelData(byte[] fileData, int channelLength) {
-        int lengthForAChannel, idx = 0, val = 0;
-        lengthForAChannel = channelLength;
+    private double[] extractChannelData(byte[] fileData, int lengthForAChannel) {
+        int idx = 0, val = 0;
         boolean isSingleChannel = (noOfChannels == 1);
         double[] mergedSamples = new double[lengthForAChannel];
         double right = 0, left = 0;
@@ -230,11 +211,10 @@ public class WavFile extends AudioFile {
         } else {
             return upSample(data, conversionFactor);
         }
-
     }
 
     /**
-     * To down-sample audio data by the given conversion facor
+     * To down-sample audio data by the given conversion factor
      * @param data
      * @param conversionFactor
      */
@@ -309,6 +289,35 @@ public class WavFile extends AudioFile {
             return false;
         }
         return true;
+    }
+
+    /**
+     * @return - Returns the short name of the audio file along with the file
+     *         extension
+     */
+    public String getShortName() {
+        return shortName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public int getTotalDataLength() {
+        return totalDataLength;
+    }
+
+    public int getDurationInSeconds() {
+        return (int) getFileDuration();
+    }
+
+    private double getFileDuration() {
+        return noOfDataBytes / averageBps;
+    }
+
+    @Override
+    public int getBps() {
+        return significantBitsPerSecond;
     }
 
 }
