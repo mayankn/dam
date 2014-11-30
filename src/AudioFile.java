@@ -1,4 +1,6 @@
 /**
+ * This class serves as the base class for all classes that represent specific
+ * audio file types
  * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
@@ -31,13 +33,12 @@ public abstract class AudioFile {
     public static final String ERROR_READING_FILE =
             "ERROR: Error while reading the file %s";
 
-    
     /**
      * To verify if the given input is of a format supported by the program
      * based on the file extension. If the file is of a valid format, returns an
      * ENUM representing the corresponding file type. Otherwise, throws a
      * RuntimeException
-     * @param fileName - a file name with extension as a String
+     * @param fileName - a String representing the file name with extension
      * @return {@FILE_TYPE}
      */
     protected static FILE_TYPE getFileTypeFromName(String fileName) {
@@ -63,7 +64,7 @@ public abstract class AudioFile {
     /**
      * Convenience method to throw a RuntimeException encapsulating the given
      * text message
-     * @param message
+     * @param message - error message to be displayed
      */
     protected static void throwException(String message) {
         throw new RuntimeException(message);
@@ -121,5 +122,5 @@ public abstract class AudioFile {
      * To close the audio file encapsulated by this instance
      */
     public abstract void close();
-    
+
 }
