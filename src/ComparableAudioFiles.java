@@ -58,7 +58,7 @@ public class ComparableAudioFiles {
      *         facilitates perceptual comparison of each audio file in the given
      *         list
      */
-    public static List<ComparableAudioFile> makeListOfAnalyzableSamples(
+    public static List<ComparableAudioFile> makeListOfComparableAudioFile(
             AudioFile[] listOfFiles) {
         int duration;
         List<ComparableAudioFile> asl = new ArrayList<ComparableAudioFile>();
@@ -77,7 +77,7 @@ public class ComparableAudioFiles {
     }
 
     /**
-     * static factory method to make new {@AnalyzableSamles}
+     * static factory method to make new {@ComparableAudioFile}
      * instances, the implementation chosen is dependent on the mode instance
      * variable
      * 
@@ -87,9 +87,9 @@ public class ComparableAudioFiles {
      */
     public static ComparableAudioFile make(AudioFile audioFile) {
         if (MODES.FAST == mode) {
-            return new AnalyzableSamplesImplForFastMatch(audioFile);
+            return new ComparableAudioFileImplForFastMatch(audioFile);
         } else {
-            return new AnalyzableSamplesImpl(audioFile);
+            return new ComparableAudioFileImpl(audioFile);
         }
     }
 
@@ -100,7 +100,7 @@ public class ComparableAudioFiles {
      * enhanced accuracy making it slightly more computationally intensive
      * 
      */
-    private static class AnalyzableSamplesImpl extends ComparableAudioFile {
+    private static class ComparableAudioFileImpl extends ComparableAudioFile {
 
         private static int half_sample_frame_size = SAMPLES_PER_FRAME / 2;
         private static int three_quarter_sample_frame_size = SAMPLES_PER_FRAME
@@ -126,7 +126,7 @@ public class ComparableAudioFiles {
         private int counter = 0;
 
         // Constructor
-        private AnalyzableSamplesImpl(AudioFile audioFile) {
+        private ComparableAudioFileImpl(AudioFile audioFile) {
             this.audioFile = audioFile;
             computeFingerprint();
         }
@@ -200,7 +200,7 @@ public class ComparableAudioFiles {
      * quicker time with potentially less accurate results
      * 
      */
-    private static class AnalyzableSamplesImplForFastMatch extends
+    private static class ComparableAudioFileImplForFastMatch extends
             ComparableAudioFile {
 
         private static int error_threshold = 5;
@@ -223,7 +223,7 @@ public class ComparableAudioFiles {
         private int counter = 0;
 
         // Constructor
-        private AnalyzableSamplesImplForFastMatch(AudioFile audioFile) {
+        private ComparableAudioFileImplForFastMatch(AudioFile audioFile) {
             this.audioFile = audioFile;
             computeFingerprint();
         }

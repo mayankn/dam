@@ -76,7 +76,7 @@ public class dam {
             // format
             validateCommandLineArguments(args);
 
-            List<ComparableAudioFile> analyzableSamples1, analyzableSamples2;
+            List<ComparableAudioFile> comparableAudioFileList1, comparableAudioFileList2;
 
             // sets the optional execution mode
             if (args.length == 5 && "-fast".equals(args[4])) {
@@ -84,25 +84,25 @@ public class dam {
                         .setMode(ComparableAudioFiles.MODES.FAST);
             }
 
-            // creates a list of AnalyzableSample instances for all the file(s)
+            // creates a list of ComparableAudioFile instances for all the file(s)
             // represented by or belonging to a folder given by arg[1]
-            analyzableSamples1 =
+            comparableAudioFileList1 =
                     ComparableAudioFiles
-                            .makeListOfAnalyzableSamples(AudioFiles
+                            .makeListOfComparableAudioFile(AudioFiles
                                     .makeAudioFilesFromArg(args[0], args[1], 1));
-            // creates a list of AnalyzableSample instances for all the file(s)
+            // creates a list of ComparableAudioFile instances for all the file(s)
             // represented by or belonging to a folder given by arg[3]
-            analyzableSamples2 =
+            comparableAudioFileList2 =
                     ComparableAudioFiles
-                            .makeListOfAnalyzableSamples(AudioFiles
+                            .makeListOfComparableAudioFile(AudioFiles
                                     .makeAudioFilesFromArg(args[2], args[3], 2));
 
             // compares each ComparableAudioFile corresponding to arg[1] to every
             // ComparableAudioFile corresponding to arg[3] for check for a
             // matching sequence of audio. If there is a match, prints "MATCH"
             // along with the time in seconds at which the match has occurred
-            for (ComparableAudioFile aS1 : analyzableSamples1) {
-                for (ComparableAudioFile aS2 : analyzableSamples2) {
+            for (ComparableAudioFile aS1 : comparableAudioFileList1) {
+                for (ComparableAudioFile aS2 : comparableAudioFileList2) {
                     double[] matchPosition = aS1.getMatchPositionInSeconds(aS2);
                     if (matchPosition != null) {
                         System.out.println(String.format(MATCH,

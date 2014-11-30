@@ -14,7 +14,7 @@ import java.nio.channels.FileChannel;
  * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
- * @author: Narendran K.P *
+ * @author: Narendran K.P
  * 
  */
 public class WavFile extends AudioFile {
