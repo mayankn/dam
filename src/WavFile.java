@@ -41,6 +41,7 @@ public class WavFile extends AudioFile {
     ByteBuffer byteBufferForStreaming;
     boolean isFirstOrLastAccess = true;
 
+    // constructor
     public WavFile(String fName) throws IOException {
         this.fileName = fName;
         File f = new File(fileName);
@@ -59,14 +60,21 @@ public class WavFile extends AudioFile {
         readHeaderChunks(headerData);
         ch = rf.getChannel();
         rf.seek(dataChunkIdx);
-        // mb = ch.map(MapMode.READ_ONLY, dataChunkIdx, ch.size() -
-        // dataChunkIdx);
     }
 
+    /**
+     * To check if there is more data to be streamed
+     * @return - true if there is more data to be streamed, false otherwise
+     */
     public boolean hasNext() {
         return (dataLengthRead < totalDataLength);
     }
 
+    /**
+     * Reads the no of bytes corresponding to the requested number of samples
+     * and returns the requested number of samples in the canonicalized form
+     * @return - requested number of samples in the canonicalized form
+     */
     public double[] getNext(int streamingLength) {
         int extractLen = streamingLength;
         int bytesToBeStreamed = streamingLength * bpsAggregate;
@@ -82,16 +90,19 @@ public class WavFile extends AudioFile {
             isFirstOrLastAccess = false;
         }
         byteBufferForStreaming.clear();
-        // mb.get(fileData);
         try {
             ch.read(byteBufferForStreaming);
         } catch (Exception e) {
-
+            // do nothing
         }
         dataLengthRead = dataLengthRead + streamingLength;
         return extractChannelData(fileData, extractLen);
     }
 
+    /**
+     * closes the file channel and the RandomAccessFile objects used for reading
+     * the audio file
+     */
     public void close() {
         try {
             ch.close();
@@ -102,6 +113,11 @@ public class WavFile extends AudioFile {
         }
     }
 
+    /**
+     * Extracts the different header chunks dynamically from the given
+     * headerData until the data chunk is found
+     * @param headerData - byte data containing the header information
+     */
     private void readHeaderChunks(byte[] headerData) {
         int chunkDataSize;
         String chunkId;
@@ -118,6 +134,15 @@ public class WavFile extends AudioFile {
         }
     }
 
+    /**
+     * Extracts relevant information from FMT, RIFF and DATA chunks that are
+     * used by the program, It also extracts the index at which the data chunk
+     * starts
+     * @param headerData - byte data containing the header information
+     * @param chunkId - chunk id to identify the current chunk
+     * @param idx - starting index of the current chunk
+     * @return - no of bytes used by the current chunk
+     */
     private int extractChunkData(byte[] headerData, String chunkId, int idx) {
         int chunkDataSize = readIntChunks(headerData, idx + 4, idx + 7);
         idx = idx + 8;
@@ -140,6 +165,14 @@ public class WavFile extends AudioFile {
         return chunkDataSize + 8;
     }
 
+    /**
+     * Helper method to read little endian int data located between the given
+     * from and to indexes of the given byte array
+     * @param b - byte array
+     * @param fromidx - from index
+     * @param toidx - to index
+     * @return - data read as an int
+     */
     private int readIntChunks(byte[] b, int fromidx, int toidx) {
         byte[] chunk = extractChunk(b, fromidx, toidx);
         ByteBuffer wrapped =
@@ -147,26 +180,47 @@ public class WavFile extends AudioFile {
         return wrapped.getInt();
     }
 
-    private byte[] extractChunk(byte[] b, int fromidx, int toidx) {
-        byte[] chunk = new byte[4];
-        System.arraycopy(b, fromidx, chunk, 0, toidx + 1 - fromidx);
-        return chunk;
-    }
-
+    /**
+     * Helper method to read little endian String data located between the given
+     * from and to indexes of the given byte array
+     * @param b - byte array
+     * @param fromidx - from index
+     * @param toidx - to index
+     * @return - data read as an String
+     */
     private String readStringChunks(byte[] b, int fromidx, int toidx) {
         byte[] chunk = extractChunk(b, fromidx, toidx);
         return new String(chunk);
     }
 
     /**
-     * Converts the file data to canonical form
+     * Helper method to return copy of a part of the given byte array between
+     * the given from and to indexes
+     * @param b - byte array
+     * @param fromidx - from index
+     * @param toidx - to index
+     * @return - copy of a part of the given byte array between the given from
+     *         and to indexes
+     */
+    private byte[] extractChunk(byte[] b, int fromidx, int toidx) {
+        byte[] chunk = new byte[4];
+        System.arraycopy(b, fromidx, chunk, 0, toidx + 1 - fromidx);
+        return chunk;
+    }
+
+    /**
+     * Converts the given data to a fixed canonical form. It parses little
+     * endian data into a signed 16-bit int and combines left and right channels
+     * by averaging them together.
+     * @param fileData
+     * @param lengthForAChannel
+     * @return - double[] of audio sample data in canonical form
      */
     private double[] extractChannelData(byte[] fileData, int lengthForAChannel) {
         int idx = 0, val = 0;
         boolean isSingleChannel = (noOfChannels == 1);
         double[] mergedSamples = new double[lengthForAChannel];
         double right = 0, left = 0;
-        // System.out.println("fileData.length"+fileData.length);
         for (int i = 0; i < fileData.length; i = i + bytesPerChannel) {
             if (bytesPerChannel == 2) {
                 val = (fileData[i] & 0xFF) | (fileData[i + 1]) << 8;
@@ -192,9 +246,11 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * To Convert the data to canonical format based on sampling rate and bit
-     * rate
-     * @param data
+     * modifies the number of samples of the given data so that it conforms to
+     * the canonical form
+     * 
+     * @param data - 16 bit audio sample data
+     * @return - double[] of audio sample in canonical form
      */
     private double[] convertToCanonicalForm(double[] data) {
         double conversionFactorExact = CANONICAL_SAMPLING_RATE / samplingRate;
@@ -214,8 +270,10 @@ public class WavFile extends AudioFile {
 
     /**
      * To down-sample audio data by the given conversion factor
-     * @param data
-     * @param conversionFactor
+     * @param data - 16 bit audio sample data
+     * @param conversionFactor - factor by which the given data is to be
+     *            downsampled
+     * @return - double[] of downsampled data
      */
     private double[] downSample(double[] data, double conversionFactor) {
         int noOfSamplesOneLess = data.length - 1;
@@ -237,10 +295,12 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * To up-sample audio data by the given conversion factor Currently supports
-     * conversion factors of 2 and 4
-     * @param data - single channel audio data
-     * @param conversionFactor - factor by which the sample has to be upsampled
+     * To up-sample audio data by the given conversion factor. Currently
+     * supports conversion factors of 2 and 4
+     * @param data - 16 bit audio sample data
+     * @param conversionFactor - factor by which the given data has to be
+     *            upsampled
+     * @return - double[] of upsampled data
      */
     private double[] upSample(double[] data, int conversionFactor) {
         int dataLength = data.length;
@@ -257,7 +317,8 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * {@inheritDoc}
+     * To validate if the encapsulated audio file is a valid .wav file
+     * @return - true if the audio file is a valid .wav file, false otherwise
      */
     @Override
     public boolean isAudioFileFormatValid() {
@@ -274,10 +335,10 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * To validate if the given file name is valid and has .wav extension
+     * To validate if the given file name has a .wav extension
      * 
-     * @param fileName - file name
-     * @return - true if the given file name is valid, false otherwise
+     * @param fileName - file name with extension
+     * @return - true if the given file has a valid extension, false otherwise
      */
     public static boolean isFileExtensionValid(String fileName) {
         int fnameLength = fileName.length();
@@ -291,29 +352,31 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * @return - Returns the short name of the audio file along with the file
-     *         extension
+     * @return - the short name of the encapsulated .wav file along with the
+     *         file extension
      */
     public String getShortName() {
         return shortName;
     }
 
+    /**
+     * @return - the full file name of the encapsulated .wav file along with the
+     *         path
+     */
     public String getFileName() {
         return fileName;
     }
 
-    public int getTotalDataLength() {
-        return totalDataLength;
-    }
-
+    /**
+     * @return - the duration of the encapsulated .wav file in seconds
+     */
     public int getDurationInSeconds() {
-        return (int) getFileDuration();
+        return (int) (noOfDataBytes / averageBps);
     }
 
-    private double getFileDuration() {
-        return noOfDataBytes / averageBps;
-    }
-
+    /**
+     * @return - bits per second of the encapsulated .wav file
+     */
     @Override
     public int getBps() {
         return significantBitsPerSecond;
