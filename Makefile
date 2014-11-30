@@ -9,8 +9,8 @@ src/WavFile.java \
 src/Mp3File.java \
 src/Precomputor.java \
 src/AcousticAnalyzer.java \
-src/AnalyzableSamples.java \
-src/AnalyzableSamplesFactory.java \
+src/ComparableAudioFile.java \
+src/ComparableAudioFiles.java \
 src/dam.java
 
 default: classes

@@ -11,7 +11,7 @@ mkdir /tmp/dam-mmn/2
 mkdir /tmp/dam-mmn/2/MP3
 mkdir /tmp/dam-mmn/2/OGG
 # execute java program
-java -cp out dam $@
+java -cp out dam $1 $2 $3 $4 -fast
 exitVal=`echo $?`
 # clear out all tmp files
 rm -rf /tmp/dam-mmn/
