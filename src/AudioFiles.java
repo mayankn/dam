@@ -56,7 +56,7 @@ public abstract class AudioFiles {
      * @throws IOException
      * @throws InterruptedException
      */
-    public static AudioFile makeAudioFileByExtension(
+    private static AudioFile makeAudioFileByExtension(
             String fileName,
             int paramNum) throws IOException, InterruptedException {
         AudioFile.FILE_TYPE ftype = AudioFile.getFileTypeFromName(fileName);
@@ -87,7 +87,7 @@ public abstract class AudioFiles {
      * @throws IOException
      * @throws InterruptedException
      */
-    public static AudioFile[] makeAllAudioFilesInDirectory(
+    private static AudioFile[] makeAllAudioFilesInDirectory(
             String dirName,
             int paramNum) throws IOException, InterruptedException {
         File fi = new File(dirName);
@@ -103,6 +103,9 @@ public abstract class AudioFiles {
         AudioFile[] audioFiles = new AudioFile[fileNames.length];
         int idx = 0;
         int errcount = 0;
+        // If any of the files in the directory is of an unsupported format,
+        // prints an error message and registers an error with the dam program
+        // without exiting immediately
         for (String f : fileNames) {
             try {
                 audioFiles[idx++] =
@@ -116,6 +119,9 @@ public abstract class AudioFiles {
                 dam.setErrorOccured();
             }
         }
+        // If error(s) had occurred while parsing files from the given
+        // directory, the size of the array is reduced as such file(s) are
+        // not considered for further processing
         if (errcount != 0) {
             audioFiles =
                     Arrays.copyOfRange(audioFiles, 0, audioFiles.length
