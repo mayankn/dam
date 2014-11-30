@@ -11,7 +11,7 @@ mkdir /tmp/dam-mmn/2
 mkdir /tmp/dam-mmn/2/MP3
 mkdir /tmp/dam-mmn/2/OGG
 
-if [ $# gt 4 ]
+if [ $# -ne 4 ]
   then
     echo "ERROR: invalid command line" 1>&2
     exit 1
