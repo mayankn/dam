@@ -90,7 +90,6 @@ public class WavFile extends AudioFile {
         }
         dataLengthRead = dataLengthRead + streamingLength;
         return extractChannelData(fileData, extractLen);
-
     }
 
     public void close() {

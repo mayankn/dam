@@ -14,7 +14,7 @@ import java.util.Set;
  * @author: Narendran K.P
  * 
  */
-public abstract class AnalyzableSamples {
+public abstract class ComparableAudioFile {
     private static final String ERROR_UNINIIALIZED_CLASS =
             "ERROR: This class must be initialized before use";
 
@@ -43,6 +43,7 @@ public abstract class AnalyzableSamples {
      * 
      * @param size - FFT window size
      * @param framesize -The number of samples analyzed together as a frame
+     * @param hanningWindowSize - Size for the Hanning Window. 
      * @param errorDensity - the error density that will be used by the matching
      *            algorithm
      * @param errThreshold - the initial error threshold that will be used by
@@ -54,10 +55,15 @@ public abstract class AnalyzableSamples {
     public static void initialize(
             int size,
             int framesize,
+            int hanningWindowSize,
             double errorDensity,
             int errThreshold,
             int frameCountForMatch,
             double offsetInSeconds) {
+        
+        // Initializes the Precomputer
+        Precomputor.initialize(size, hanningWindowSize);
+       
         samples_per_frame = framesize;
         error_threshold = errThreshold;
         frame_count_for_5_seconds = frameCountForMatch;
@@ -77,7 +83,7 @@ public abstract class AnalyzableSamples {
     }
 
     // constructor
-    protected AnalyzableSamples() {
+    protected ComparableAudioFile() {
         if (!isInitialized) {
             throw new RuntimeException(ERROR_UNINIIALIZED_CLASS);
         }
@@ -89,11 +95,11 @@ public abstract class AnalyzableSamples {
      * of the matching segment within the second file. If there is no match,
      * returns a null
      * 
-     * @param aS2 - {@AnalyzableSamples} object which
+     * @param aS2 - {@ComparableAudioFile} object which
      *            encapsulates the audio file to be compared with
      * @return - a double[2], where,
      */    
-    public double[] getMatchPositionInSeconds(AnalyzableSamples aS2) {
+    public double[] getMatchPositionInSeconds(ComparableAudioFile aS2) {
         return computeFragmentMatchWithTime(this.getFingerprint(),
                 aS2.getFingerprint());
     }
@@ -265,7 +271,6 @@ public abstract class AnalyzableSamples {
         Integer[] sequence = new Integer[size];
         sequence = s.toArray(sequence);
         Arrays.sort(sequence);
-        // System.out.println(Arrays.asList(sequence));
         if (sequence.length <= min_hash_collisions_for_match) {
             return -1;
         }

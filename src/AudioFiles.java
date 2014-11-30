@@ -113,7 +113,7 @@ public abstract class AudioFiles {
                 idx--;
                 errcount++;
                 System.err.println(e.getMessage());
-                dam.setErrorOccured(true);
+                dam.setErrorOccured();
             }
         }
         if (errcount != 0) {
