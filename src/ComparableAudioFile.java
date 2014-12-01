@@ -33,7 +33,7 @@ public abstract class ComparableAudioFile {
 
     private String fileName;
 
-    private int slen, bitRate;
+    private int bitRate;
 
     /**
      * 
@@ -43,7 +43,7 @@ public abstract class ComparableAudioFile {
      * 
      * @param size - FFT window size
      * @param framesize -The number of samples analyzed together as a frame
-     * @param hanningWindowSize - Size for the Hanning Window. 
+     * @param hanningWindowSize - Size for the Hanning Window.
      * @param errorDensity - the error density that will be used by the matching
      *            algorithm
      * @param errThreshold - the initial error threshold that will be used by
@@ -60,10 +60,10 @@ public abstract class ComparableAudioFile {
             int errThreshold,
             int frameCountForMatch,
             double offsetInSeconds) {
-        
+
         // Initializes the Precomputer
         Precomputor.initialize(size, hanningWindowSize);
-       
+
         samples_per_frame = framesize;
         error_threshold = errThreshold;
         frame_count_for_5_seconds = frameCountForMatch;
@@ -90,23 +90,9 @@ public abstract class ComparableAudioFile {
     }
 
     /**
-     * Returns the offset in seconds of the beginning of the matching segment
-     * within the first file, along with the offset in seconds of the beginning
-     * of the matching segment within the second file. If there is no match,
-     * returns a null
-     * 
-     * @param aS2 - {@ComparableAudioFile} object which
-     *            encapsulates the audio file to be compared with
-     * @return - a double[2], where,
-     */    
-    public double[] getMatchPositionInSeconds(ComparableAudioFile aS2) {
-        return computeFragmentMatchWithTime(this.getFingerprint(),
-                aS2.getFingerprint());
-    }
-
-    /**
      * Applies the Hanning window function to the samples chosen by start index
-     * and returns the input array after updating it with the computed value
+     * and returns the input array after updating it with the computed value.
+     * The method also contains the logic for applying zero padding
      * 
      * @param input - A double array in which the 'frame' corresponding to the
      *            given start index will be stored
@@ -121,23 +107,6 @@ public abstract class ComparableAudioFile {
         for (int i = samples_per_frame; i < fftsize; i++) {
             input[i] = 0;
         }
-    }
-
-    /**
-     * This is a helper method used to prepare the bit reversed array needed by
-     * the non-recursive FFT implementation
-     * 
-     * @param input - A double array of size 'fftsize'
-     * @return - A double array of twice the length as input with values store
-     *         in bit reversed order
-     */
-    private double[] bitReverseArray(double[] input) {
-        int inputSize = input.length;
-        double[] brArr = new double[inputSize << 1];
-        for (int i = 0; i < inputSize; i++) {
-            brArr[bitReverseArray[i]] = input[i];
-        }
-        return brArr;
     }
 
     /**
@@ -190,7 +159,46 @@ public abstract class ComparableAudioFile {
     }
 
     /**
+     * This is a helper method used to prepare the bit reversed array needed by
+     * the non-recursive FFT implementation. It returns an array of twice the
+     * length, where the second half of the array represents the imaginary
+     * component of a complex number. It makes use of the pre-computed
+     * bitReverseArray
      * 
+     * @param input - A double array of size 'fftsize'
+     * @return - A double array of twice the length as input with values store
+     *         in bit reversed order
+     */
+    private double[] bitReverseArray(double[] input) {
+        int inputSize = input.length;
+        double[] brArr = new double[inputSize << 1];
+        for (int i = 0; i < inputSize; i++) {
+            brArr[bitReverseArray[i]] = input[i];
+        }
+        return brArr;
+    }
+
+    /**
+     * Returns the offset in seconds of the beginning of the matching segment
+     * within the first file, along with the offset in seconds of the beginning
+     * of the matching segment within the second file. If there is no match,
+     * returns a null
+     * 
+     * @param aS2 - {@ComparableAudioFile} object which
+     *            encapsulates the audio file to be compared with
+     * @return - a double[2], where,
+     */
+    public double[] getMatchPositionInSeconds(ComparableAudioFile aS2) {
+        return computeFragmentMatchWithTime(this.getFingerprint(),
+                aS2.getFingerprint());
+    }
+
+    /**
+     * This method extracts two sets of time sequences (one for each
+     * fingerprint) containing the time instances at which there were hash
+     * collisions. It then identifies if there is a match and the time at which
+     * the match has occurred by identifying the presence of sequences in the
+     * two sets
      * @param fp1 - HashMap representing a fingerprint
      * @param fp2 - HashMap representing another fingerprint
      * @return - If there is a match, returns an array of two elements with each
@@ -323,25 +331,17 @@ public abstract class ComparableAudioFile {
      */
     public void setBitRate(int bitRate) {
         this.bitRate = bitRate;
-    }
+    }  
 
     /**
      * 
-     * @return
-     */
-    public int getSampleLength() {
-        return slen;
-    }
-
-    /**
-     * 
-     * @return
+     * @return - the fingerprint corresponding to this instance
      */
     public abstract Map<Integer, List<Integer>> getFingerprint();
 
     /**
      * 
-     * @param fname
+     * @param fname - file name
      */
     public void setFileName(String fname) {
         this.fileName = fname;
@@ -349,7 +349,7 @@ public abstract class ComparableAudioFile {
 
     /**
      * 
-     * @return
+     * @return - file name
      */
     public String getFileName() {
         return this.fileName;
