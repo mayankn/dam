@@ -67,10 +67,10 @@ public class OggFile extends AudioFile {
                 String convertedFileName = null;
                 boolean hasErrorOccured = false;
                 String nameWithWavExtension =
-                        shortName.replaceAll("(.mp3)$", ".wav");
+                        shortName.replaceAll("(.ogg)$", ".wav");
                 convertedFileName =
                         CONVERTED_FILES_DIRECTORY + File.separator + paramNum
-                                + File.separator + AudioFile.FILE_TYPE.MP3
+                                + File.separator + AudioFile.FILE_TYPE.OGG
                                 + File.separator + nameWithWavExtension;
                 ProcessBuilder p =
                         new ProcessBuilder(OGG_DECODER_PATH, "--bits 16",
