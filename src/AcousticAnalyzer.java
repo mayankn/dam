@@ -39,7 +39,7 @@ public class AcousticAnalyzer {
      * 
      * 
      */
-    public static void updateFingerprintForGivenSamplesUsingMaxPeak(
+    public static void updateFingerprintUsingMaxPeak(
             double[] audioSegment,
             int sttime,
             Map<Integer, List<Integer>> fingerprint) {
@@ -113,7 +113,7 @@ public class AcousticAnalyzer {
      * 
      * 
      */
-    public static void updateFingerprintForGivenSamplesUsingAverageDeltaPowerDiff(
+    public static void updateFingerprintUsingAverageDeltaPowerDiff(
             double[] audioSegment,
             int sttime,
             Map<Integer, List<Integer>> fingerprint) {

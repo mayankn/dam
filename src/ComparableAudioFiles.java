@@ -168,11 +168,11 @@ public class ComparableAudioFiles {
             for (int i = 0; i < slen;) {
                 applyHannWindow(data, input, i);
                 AcousticAnalyzer
-                        .updateFingerprintForGivenSamplesUsingAverageDeltaPowerDiff(
+                        .updateFingerprintUsingAverageDeltaPowerDiff(
                                 performFFT(input), counter++, fingerprint);
                 applyHannWindow(data, input, i + half_sample_frame_size);
                 AcousticAnalyzer
-                        .updateFingerprintForGivenSamplesUsingAverageDeltaPowerDiff(
+                        .updateFingerprintUsingAverageDeltaPowerDiff(
                                 performFFT(input), counter++, fingerprint);
                 i = i + SAMPLES_PER_FRAME;
             }
@@ -259,7 +259,7 @@ public class ComparableAudioFiles {
             for (int i = 0; i < slen;) {
                 applyHannWindow(data, input, i);
                 AcousticAnalyzer
-                        .updateFingerprintForGivenSamplesUsingAverageDeltaPowerDiff(
+                        .updateFingerprintUsingAverageDeltaPowerDiff(
                                 performFFT(input), counter++, fingerprint);
                 i = i + SAMPLES_PER_FRAME;
             }
