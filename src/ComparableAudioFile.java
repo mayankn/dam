@@ -44,8 +44,8 @@ public abstract class ComparableAudioFile {
      * @param size - FFT window size
      * @param framesize -The number of samples analyzed together as a frame
      * @param hanningWindowSize - Size for the Hanning Window.
-     * @param errorDensity - the error density that will be used by the matching
-     *            algorithm
+     * @param errorDensity - the error density that will be used by the
+     *            matching algorithm
      * @param errThreshold - the initial error threshold that will be used by
      *            the matching algorithm
      * @param frameCountForMatch - number of sequential frames needed for a
@@ -201,8 +201,8 @@ public abstract class ComparableAudioFile {
      * two sets
      * @param fp1 - HashMap representing a fingerprint
      * @param fp2 - HashMap representing another fingerprint
-     * @return - If there is a match, returns an array of two elements with each
-     *         element representing the time at which the match was found.
+     * @return - If there is a match, returns an array of two elements with
+     *         each element representing the time at which the match was found.
      *         Otherwise, returns a null value.
      */
     protected double[] computeFragmentMatchWithTime(
@@ -239,16 +239,16 @@ public abstract class ComparableAudioFile {
      * sequence if any.
      * 
      * Algorithm: the technique looks for a continuity in the given sequence of
-     * numbers so that the relative time difference between start and end values
-     * of the sequence is equal to are greater than 5 seconds. If there are many
-     * such discontinuous sequences, keeps track of the longest such sequence so
-     * far.
+     * numbers so that the relative time difference between start and end
+     * values of the sequence is equal to are greater than 5 seconds. If there
+     * are many such discontinuous sequences, keeps track of the longest such
+     * sequence so far.
      * <p>
      * 1) sorts the values in the input set in ascending order
      * <p>
      * 2) traverses the list from an anchor point (starts with the first
-     * element), if the difference between consecutive values is 1, the no error
-     * is accumulated, otherwise the difference is added to errors
+     * element), if the difference between consecutive values is 1, the no
+     * error is accumulated, otherwise the difference is added to errors
      * <p>
      * 3) step 2 is repeated as long as the error remains below the threshold.
      * <p>
@@ -260,13 +260,14 @@ public abstract class ComparableAudioFile {
      * <p>
      * 6) steps 2-5 are repeated till the program reaches the end of sequence.
      * <p>
-     * 7) between steps 2-6, the algorithm keeps track of difference between the
-     * element corresponding to the current index and the anchor point. If the
-     * difference is greater that the value corresponding to 5 seconds and if
-     * the sequence count is greater than any such sequence encountered so far,
-     * remembers the start index (anchor point) corresponding to the sequence.
-     * At the end if no such sequence is found , returns a -1. otherwise returns
-     * the value corresponding to the anchor point of the sequence
+     * 7) between steps 2-6, the algorithm keeps track of difference between
+     * the element corresponding to the current index and the anchor point. If
+     * the difference is greater that the value corresponding to 5 seconds and
+     * if the sequence count is greater than any such sequence encountered so
+     * far, remembers the start index (anchor point) corresponding to the
+     * sequence. At the end if no such sequence is found , returns a -1.
+     * otherwise returns the value corresponding to the anchor point of the
+     * sequence
      * 
      * 
      * @param s - set of values representing time offsets from the beginning
@@ -290,8 +291,9 @@ public abstract class ComparableAudioFile {
         int diff = 0;
         for (int i = 0; i < sequence.length - 1;) {
             if (errors >= (error_threshold + (error_density * seq))) {
-                if (cleanupidx == sequence.length)
+                if (cleanupidx == sequence.length) {
                     break;
+                }
                 sofar = sofar - diffarr[cleanupidx];
                 errors = errors - errarr[cleanupidx];
                 cleanupidx++;

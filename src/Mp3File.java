@@ -5,8 +5,8 @@ import java.io.InputStreamReader;
 
 /**
  * This class converts the byte data from a valid mp3 audio file into a
- * canonical format suitable for analysis. The canonical format used by the file
- * is CD-quality audio with 16 bits per sample, single channel, 44.1 Khz
+ * canonical format suitable for analysis. The canonical format used by the
+ * file is CD-quality audio with 16 bits per sample, single channel, 44.1 Khz
  * sampling rate represented as a double[] array.
  * 
  * Prerequisites: Requires the software 'lame' to be pre-installed in the path
@@ -29,9 +29,9 @@ public class Mp3File extends AudioFile {
     private String fileName, shortName;
 
     /**
-     * This class contains logic to handle the conversion of a valid mp3 file to
-     * a wav file. If the given mp3 file of a format that is not supported, no
-     * wav file will be created.
+     * This class contains logic to handle the conversion of a valid mp3 file
+     * to a wav file. If the given mp3 file of a format that is not supported,
+     * no wav file will be created.
      * 
      */
     static class Mp3decoder implements Runnable {
@@ -153,10 +153,10 @@ public class Mp3File extends AudioFile {
     }
 
     /**
-     * Waits for the conversionProcess to complete. If the conversion process is
-     * complete, obtains the internal representation of the mp3 file from the
-     * decoder and sets it to an instance variable. Nullifies references to the
-     * objects used for conversion to free up memory as they are no longer
+     * Waits for the conversionProcess to complete. If the conversion process
+     * is complete, obtains the internal representation of the mp3 file from
+     * the decoder and sets it to an instance variable. Nullifies references to
+     * the objects used for conversion to free up memory as they are no longer
      * needed.
      */
     private void setInternalRepresentation() {

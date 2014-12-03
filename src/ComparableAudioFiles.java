@@ -18,8 +18,8 @@ public class ComparableAudioFiles {
 
     /**
      * 
-     * Enumeration of execution modes supported by the {@ComparableAudioFiles
-     * } class.
+     * Enumeration of execution modes supported by the 
+     * {@ComparableAudioFiles} class.
      * 
      * <pre>
      * FAST - Fast mode, faster execution time with reduced accuracy. 
@@ -55,8 +55,8 @@ public class ComparableAudioFiles {
      * @param listOfFiles - a list of {@AudioFile} to be analyzed
      * 
      * @return - list of {@ComparableAudioFile} that
-     *         facilitates perceptual comparison of each audio file in the given
-     *         list
+     *         facilitates perceptual comparison of each audio file in the
+     *         given list
      */
     public static List<ComparableAudioFile> makeListOfComparableAudioFile(
             AudioFile[] listOfFiles) {
@@ -78,6 +78,7 @@ public class ComparableAudioFiles {
 
     /**
      * static factory method to make new {@ComparableAudioFile
+     * 
      * } instances, the implementation chosen is dependent
      * on the mode instance variable
      * 
@@ -145,9 +146,9 @@ public class ComparableAudioFiles {
          * Computes and updates the acoustic fingerprint for a segment of
          * streaming audio after applying the Hanning window function to the
          * individual analysis frames. The method computes FFT for these
-         * analysis frames with 50% overlap, and updates the fingerprint of each
-         * of these frames to the main fingerprint corresponding to the source
-         * audio file encapsulated by this instance
+         * analysis frames with 50% overlap, and updates the fingerprint of
+         * each of these frames to the main fingerprint corresponding to the
+         * source audio file encapsulated by this instance
          * 
          * @param data - A segment of audio samples belonging to this instance
          *            for which the fingerprint is to be updated
@@ -227,8 +228,8 @@ public class ComparableAudioFiles {
             computeFingerprint();
         }
 
-        // helper method that updates the fingerprint for the encapsulated audio
-        // file on the fly by breaking it down to streaming chunks
+        // helper method that updates the fingerprint for the encapsulated
+        // audio file on the fly by breaking it down to streaming chunks
         private void computeFingerprint() {
             int streamingLength = SAMPLES_PER_FRAME * 32;
             while (audioFile.hasNext()) {

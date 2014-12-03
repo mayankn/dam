@@ -35,8 +35,8 @@ public abstract class AudioFile {
 
     /**
      * To verify if the given input is of a format supported by the program
-     * based on the file extension. If the file is of a valid format, returns an
-     * ENUM representing the corresponding file type. Otherwise, throws a
+     * based on the file extension. If the file is of a valid format, returns
+     * an ENUM representing the corresponding file type. Otherwise, throws a
      * RuntimeException
      * @param fileName - a String representing the file name with extension
      * @return {@FILE_TYPE}
@@ -100,9 +100,9 @@ public abstract class AudioFile {
      * 
      * @return double array of length given by the parameter streamingLength in
      *         which each value represents a sample from the canonicalized
-     *         format of audio samples encapsulated by this instance. The method
-     *         may return an array of size < streamingLength if there are not
-     *         enough unread samples in the encapsulated audio
+     *         format of audio samples encapsulated by this instance. The
+     *         method may return an array of size < streamingLength if there
+     *         are not enough unread samples in the encapsulated audio
      */
     public abstract double[] getNext(int streamingLength);
 

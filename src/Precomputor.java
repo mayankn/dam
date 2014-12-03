@@ -124,9 +124,9 @@ public class Precomputor {
 
     /**
      * Constructs a map of bit reversed indexes. The value at every index
-     * corresponds to the corresponding bit-reversed index. This method computes
-     * the bit reversed indexes for the number of values specified by the size
-     * instance variable
+     * corresponds to the corresponding bit-reversed index. This method
+     * computes the bit reversed indexes for the number of values specified by
+     * the size instance variable
      */
     private static void constructBitReverseIndexArray() {
         int expVal = log2Map.get(size);

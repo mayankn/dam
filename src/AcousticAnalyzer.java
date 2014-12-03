@@ -20,17 +20,17 @@ public class AcousticAnalyzer {
 
     /**
      * 
-     * This method computes a sub-fingerprint for the given segment of frequency
-     * domain data by calculating a hash based on the frequency components
-     * corresponding to the peak amplitude for several predefined frequency
-     * ranges and stores the same in the given hash map along with the given
-     * time component as the value (in a list). If the hash map already contains
-     * the hash computed as a key, updates the given time component in the list
-     * of values for the same key
+     * This method computes a sub-fingerprint for the given segment of
+     * frequency domain data by calculating a hash based on the frequency
+     * components corresponding to the peak amplitude for several predefined
+     * frequency ranges and stores the same in the given hash map along with
+     * the given time component as the value (in a list). If the hash map
+     * already contains the hash computed as a key, updates the given time
+     * component in the list of values for the same key
      * 
      * 
-     * @param audioSegment - an array representing a segment of frequency domain
-     *            data for which the fingerprint has to be computed
+     * @param audioSegment - an array representing a segment of frequency
+     *            domain data for which the fingerprint has to be computed
      * 
      * @param sttime - a number representing the relative time of occurrence of
      *            the given audio segment
@@ -51,7 +51,6 @@ public class AcousticAnalyzer {
         double pmax = 0;
         byte[] fmax = new byte[4];
         byte fpmax = 0;
-        // TODO: replace with better range if possible - was 1, 120
         for (int fband = 2; fband < maxrange;) {
             if (fband < range) {
                 absValue =
@@ -95,16 +94,16 @@ public class AcousticAnalyzer {
     }
 
     /**
-     * This method computes a sub-fingerprint for the given segment of frequency
-     * domain data by computing the delta of the average power between several
-     * consecutive frequency sub-bands defined by the Bark Scale and stores the
-     * same in the given hash map along with the given time component as the
-     * value (in a list). If the hash map already contains the hash computed as
-     * a key, updates the given time component in the list of values for the
-     * same key
+     * This method computes a sub-fingerprint for the given segment of
+     * frequency domain data by computing the delta of the average power
+     * between several consecutive frequency sub-bands defined by the Bark
+     * Scale and stores the same in the given hash map along with the given
+     * time component as the value (in a list). If the hash map already
+     * contains the hash computed as a key, updates the given time component in
+     * the list of values for the same key
      * 
-     * @param audioSegment - An array representing a segment of frequency domain
-     *            data for which the fingerprint has to be computed
+     * @param audioSegment - An array representing a segment of frequency
+     *            domain data for which the fingerprint has to be computed
      * 
      * @param sttime - A number representing the relative time of occurrence of
      *            the given audio segment
@@ -125,7 +124,6 @@ public class AcousticAnalyzer {
         int hash = 0, range = BARK_SCALE[0], i = 0, maxrange = 126;
         int counter = 0;
         double fpow = 0;
-        // TODO: check
         for (int fband = 12; fband < maxrange;) {
             if (fband < range) {
                 absValue =

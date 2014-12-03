@@ -25,13 +25,13 @@ import java.util.List;
  * system and contains nothing but files whose pathnames would be legal
  * following a "-f" option.
  * 
- * If a <pathname> preceded by the "-f" option ends in ".wav", that file must be
- * in little-endian (RIFF) WAVE format with PCM encoding (AudioFormat 1), stereo
- * or mono, 8- or 16-bit samples, with a sampling rate of 11.025, 22.05, 44.1,
- * or 48 kHz.
+ * If a <pathname> preceded by the "-f" option ends in ".wav", that file must
+ * be in little-endian (RIFF) WAVE format with PCM encoding (AudioFormat 1),
+ * stereo or mono, 8- or 16-bit samples, with a sampling rate of 11.025, 22.05,
+ * 44.1, or 48 kHz.
  * 
- * If the <pathname> ends in ".mp3", that file must be in the MPEG-1 Audio Layer
- * III format (MP3).
+ * If the <pathname> ends in ".mp3", that file must be in the MPEG-1 Audio
+ * Layer III format (MP3).
  * 
  * If the <pathname> ends in ".ogg", that file must be in a format that version
  * 1.4.0 of the oggdec program will decode into a supported WAVE format without
@@ -63,7 +63,7 @@ public class dam {
 
     /**
      * To get the user name for temp folder creation
-     * @return - user name passed as a command line arguent
+     * @return - user name passed as a command line argument
      */
     public static String getUserName() {
         return userName;
@@ -71,8 +71,8 @@ public class dam {
 
     /**
      * This method is invoked to indicate that an error has occurred during
-     * execution. If this method is invoked, the error message should already be
-     * printed by the code which invoked the method as the program will exit
+     * execution. If this method is invoked, the error message should already
+     * be printed by the code which invoked the method as the program will exit
      * without printing additional error messages
      */
     public static void setErrorOccured() {
@@ -85,7 +85,8 @@ public class dam {
             // format
             validateCommandLineArguments(args);
 
-            List<ComparableAudioFile> comparableAudioFileList1, comparableAudioFileList2;
+            List<ComparableAudioFile> comparableAudioFileList1,
+            comparableAudioFileList2;
             // sets the user name for creation of the temp folder
             if (args[4] != null) {
                 userName = args[4];
@@ -104,23 +105,24 @@ public class dam {
             comparableAudioFileList1 =
                     ComparableAudioFiles
                             .makeListOfComparableAudioFile(AudioFiles
-                                    .makeAudioFilesFromArg(args[0], args[1], 1));
+                                 .makeAudioFilesFromArg(args[0], args[1], 1));
             // creates a list of ComparableAudioFile instances for all the
             // file(s)
             // represented by or belonging to a folder given by arg[3]
             comparableAudioFileList2 =
                     ComparableAudioFiles
                             .makeListOfComparableAudioFile(AudioFiles
-                                    .makeAudioFilesFromArg(args[2], args[3], 2));
+                                 .makeAudioFilesFromArg(args[2], args[3], 2));
 
             // compares each ComparableAudioFile corresponding to arg[1] to
-            // every
-            // ComparableAudioFile corresponding to arg[3] for check for a
-            // matching sequence of audio. If there is a match, prints "MATCH"
-            // along with the time in seconds at which the match has occurred
+            // every ComparableAudioFile corresponding to arg[3] for check for
+            // a matching sequence of audio. If there is a match, prints 
+            // "MATCH" along with the time in seconds at which the match has
+            //  occurred
             for (ComparableAudioFile aS1 : comparableAudioFileList1) {
                 for (ComparableAudioFile aS2 : comparableAudioFileList2) {
-                    double[] matchPosition = aS1.getMatchPositionInSeconds(aS2);
+                    double[] matchPosition =
+                            aS1.getMatchPositionInSeconds(aS2);
                     if (matchPosition != null) {
                         System.out.println(String.format(MATCH,
                                 aS1.getFileName(), aS2.getFileName(),

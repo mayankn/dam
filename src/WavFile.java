@@ -100,8 +100,8 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * closes the file channel and the RandomAccessFile objects used for reading
-     * the audio file
+     * closes the file channel and the RandomAccessFile objects used for
+     * reading the audio file
      */
     public void close() {
         try {
@@ -181,8 +181,8 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * Helper method to read little endian String data located between the given
-     * from and to indexes of the given byte array
+     * Helper method to read little endian String data located between the
+     * given from and to indexes of the given byte array
      * @param b - byte array
      * @param fromidx - from index
      * @param toidx - to index
@@ -210,13 +210,14 @@ public class WavFile extends AudioFile {
 
     /**
      * Converts the given data to a fixed canonical form. It parses little
-     * endian data into a signed 16-bit int and combines left and right channels
-     * by averaging them together.
+     * endian data into a signed 16-bit int and combines left and right
+     * channels by averaging them together.
      * @param fileData
      * @param lengthForAChannel
      * @return - double[] of audio sample data in canonical form
      */
-    private double[] extractChannelData(byte[] fileData, int lengthForAChannel) {
+    private double[] extractChannelData(byte[] fileData,
+            int lengthForAChannel) {
         int idx = 0, val = 0;
         boolean isSingleChannel = (noOfChannels == 1);
         double[] mergedSamples = new double[lengthForAChannel];
@@ -360,8 +361,8 @@ public class WavFile extends AudioFile {
     }
 
     /**
-     * @return - the full file name of the encapsulated .wav file along with the
-     *         path
+     * @return - the full file name of the encapsulated .wav file along with
+     *         the path
      */
     public String getFileName() {
         return fileName;

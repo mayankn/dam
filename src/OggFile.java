@@ -6,13 +6,13 @@ import java.io.InputStreamReader;
 /**
  * <p>
  * This class converts the byte data from a valid Ogg audio file into a
- * canonical format suitable for analysis. The canonical format used by the file
- * is CD-quality audio with 16 bits per sample, single channel, 44.1 Khz
+ * canonical format suitable for analysis. The canonical format used by the
+ * file is CD-quality audio with 16 bits per sample, single channel, 44.1 Khz
  * sampling rate represented as a double[] array.
  * 
  * <p>
- * Prerequisites: Requires the software 'oggdec' to be pre-installed in the path
- * "/usr/bin/oggdec" which has to be accessible
+ * Prerequisites: Requires the software 'oggdec' to be pre-installed in the
+ * path "/usr/bin/oggdec" which has to be accessible
  * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
@@ -155,10 +155,10 @@ public class OggFile extends AudioFile {
     }
 
     /**
-     * Waits for the conversionProcess to complete. If the conversion process is
-     * complete, obtains the internal representation of the .Ogg file from the
-     * decoder and sets it to an instance variable. Nullifies references to the
-     * objects used for conversion to free up memory as they are no longer
+     * Waits for the conversionProcess to complete. If the conversion process
+     * is complete, obtains the internal representation of the .Ogg file from
+     * the decoder and sets it to an instance variable. Nullifies references to
+     * the objects used for conversion to free up memory as they are no longer
      * needed.
      */
     private void setInternalRepresentation() {

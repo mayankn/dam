@@ -3,9 +3,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * This is an abstract class that contains static factory methods to instantiate
- * an instance or a collection of {@AudioFile} based on the input
- * parameters
+ * This is an abstract class that contains static factory methods to
+ * instantiate an instance or a collection of {@AudioFile} based on
+ * the input parameters
  * 
  * @author: Magesh Ramachandran
  * @author: Mayank Narashiman
@@ -18,8 +18,8 @@ public abstract class AudioFiles {
     /**
      * Makes an array of {@AudioFile} based on the given parameters
      * 
-     * @param flag - indicates if the given fpath is a directory or a file, '-f'
-     *            -> file, '-d' -> directory
+     * @param flag - indicates if the given fpath is a directory or a file,
+     *            '-f' -> file, '-d' -> directory
      * @param fpath - file path including the file name, or a file directory
      * @param paramNum - the sub-folder of the temporary path to which the
      *            temporary file(s) if any must be written to
@@ -74,16 +74,17 @@ public abstract class AudioFiles {
     }
 
     /**
-     * Makes an array of {@AudioFile} for all the files of supported
-     * file type that are present in the given file directory. If there are any
-     * files of unsupported format or if there are other sub-directories, the
-     * method prints an error message and sets the exit status of the main
-     * program to -1
+     * Makes an array of {@AudioFile} for all the files of
+     * supported file type that are present in the given file directory. If
+     * there are any files of unsupported format or if there are other
+     * sub-directories, the method prints an error message and sets the exit
+     * status of the main program to -1
      * 
      * @param dirName - directory name
      * @param paramNum - sub-folder under which the temporary files created by
      *            the program must be stored
-     * @return - an array of {@AudioFile} created based on the input
+     * @return - an array of {@AudioFile} created based on the
+     *         input
      * @throws IOException
      * @throws InterruptedException
      */
