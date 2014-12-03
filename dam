@@ -1,25 +1,29 @@
 #!/bin/bash
 
-# clearing old tmp files
-rm -rf /tmp/dam-mmn/
-# create directory to hold tmp files
-mkdir /tmp/dam-mmn
-mkdir /tmp/dam-mmn/1
-mkdir /tmp/dam-mmn/1/MP3
-mkdir /tmp/dam-mmn/1/OGG
-mkdir /tmp/dam-mmn/2
-mkdir /tmp/dam-mmn/2/MP3
-mkdir /tmp/dam-mmn/2/OGG
-
 if [ $# -ne 4 ]
   then
     echo "ERROR: invalid command line" 1>&2
     exit 1
 fi
 
+# get the user running the script
+current_user=$(whoami)
+
+# clearing old tmp files
+rm -rf /tmp/$current_user
+
+# create directory to hold tmp files
+mkdir /tmp/$current_user
+mkdir /tmp/$current_user/1
+mkdir /tmp/$current_user/1/MP3
+mkdir /tmp/$current_user/1/OGG
+mkdir /tmp/$current_user/2
+mkdir /tmp/$current_user/2/MP3
+mkdir /tmp/$current_user/2/OGG
+
 # execute java program
-java -cp out dam $1 $2 $3 $4 -fast
+java -cp out dam $1 $2 $3 $4 $current_user -fast
 exitVal=`echo $?`
 # clear out all tmp files
-rm -rf /tmp/dam-mmn/
+rm -rf /tmp/$current_user
 exit $exitVal

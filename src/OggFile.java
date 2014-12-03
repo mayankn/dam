@@ -23,7 +23,7 @@ public class OggFile extends AudioFile {
 
     private static String OGG_DECODER_PATH = "/usr/bin/oggdec";
     private static String CONVERTED_FILES_DIRECTORY = File.separator + "tmp"
-            + File.separator + "dam-mmn";
+            + File.separator + dam.getUSERNAME();
 
     private OggDecoder oggDecoder;
     private AudioFile internalRepresentation;

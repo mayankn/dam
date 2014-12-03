@@ -21,7 +21,7 @@ public class Mp3File extends AudioFile {
 
     private static String LAME_DECODER_PATH = "/course/cs5500f14/bin/lame";
     private static String CONVERTED_FILES_DIRECTORY = File.separator + "tmp"
-            + File.separator + "dam-mmn";
+            + File.separator + dam.getUSERNAME();
 
     private Mp3decoder mp3Decoder;
     private AudioFile internalRepresentation;

@@ -48,6 +48,7 @@ public class dam {
     private static String MATCH = "MATCH %s %s %.1f %.1f";
     private static String UNEXPECTED_ERROR =
             "ERROR: An unexpected error has occured";
+    public static String USERNAME;
 
     public static boolean errorOccured;
 
@@ -69,6 +70,11 @@ public class dam {
         dam.errorOccured = true;
     }
 
+    public static String getUSERNAME() {
+        return USERNAME;
+    }
+
+
     public static void main(String args[]) {
         try {
             Long st = System.currentTimeMillis();
@@ -78,8 +84,13 @@ public class dam {
 
             List<ComparableAudioFile> comparableAudioFileList1, comparableAudioFileList2;
 
+            // sets the USERNAME
+            if (!args[4].isEmpty()) {
+                USERNAME = args[4];
+            }
+
             // sets the optional execution mode
-            if (args.length == 5 && "-fast".equals(args[4])) {
+            if (args.length == 6 && "-fast".equals(args[5])) {
                 ComparableAudioFiles
                         .setMode(ComparableAudioFiles.MODES.FAST);
             }
@@ -115,7 +126,7 @@ public class dam {
                 System.exit(1);
             }
             Long et = System.currentTimeMillis();
-            System.out.println("time: " + (et - st));
+            //System.out.println("time: " + (et - st));
         } catch (Exception e) {
             String errMessage = e.getMessage();
             // if the error message is in an unusual format, changes it to an
