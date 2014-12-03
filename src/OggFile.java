@@ -23,7 +23,7 @@ public class OggFile extends AudioFile {
 
     private static String OGG_DECODER_PATH = "/usr/bin/oggdec";
     private static String CONVERTED_FILES_DIRECTORY = File.separator + "tmp"
-            + File.separator + dam.getUSERNAME();
+            + File.separator;
 
     private OggDecoder oggDecoder;
     private AudioFile internalRepresentation;
@@ -69,9 +69,10 @@ public class OggFile extends AudioFile {
                 String nameWithWavExtension =
                         shortName.replaceAll("(.ogg)$", ".wav");
                 convertedFileName =
-                        CONVERTED_FILES_DIRECTORY + File.separator + paramNum
-                                + File.separator + AudioFile.FILE_TYPE.OGG
-                                + File.separator + nameWithWavExtension;
+                        CONVERTED_FILES_DIRECTORY + dam.getUserName()
+                                + File.separator + paramNum + File.separator
+                                + AudioFile.FILE_TYPE.OGG + File.separator
+                                + nameWithWavExtension;
                 ProcessBuilder p =
                         new ProcessBuilder(OGG_DECODER_PATH, "--bits 16",
                                 fileName, "--output", convertedFileName);
@@ -155,9 +156,9 @@ public class OggFile extends AudioFile {
 
     /**
      * Waits for the conversionProcess to complete. If the conversion process is
-     * complete, obtains the internal representation of the .Ogg file from
-     * the decoder and sets it to an instance variable. Nullifies references to
-     * the objects used for conversion to free up memory as they are no longer
+     * complete, obtains the internal representation of the .Ogg file from the
+     * decoder and sets it to an instance variable. Nullifies references to the
+     * objects used for conversion to free up memory as they are no longer
      * needed.
      */
     private void setInternalRepresentation() {

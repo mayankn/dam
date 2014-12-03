@@ -18,8 +18,8 @@ public class ComparableAudioFiles {
 
     /**
      * 
-     * Enumeration of execution modes supported by the
-     * {@ComparableAudioFiles} class.
+     * Enumeration of execution modes supported by the {@ComparableAudioFiles
+     * } class.
      * 
      * <pre>
      * FAST - Fast mode, faster execution time with reduced accuracy. 
@@ -49,8 +49,8 @@ public class ComparableAudioFiles {
 
     /**
      * This method takes a list of {@AudioFile} and returns a list
-     * of {@ComparableAudioFile} that encapsulate the given
-     * files in order to facilitate perceptual comparison.
+     * of {@ComparableAudioFile} that encapsulate the
+     * given files in order to facilitate perceptual comparison.
      * 
      * @param listOfFiles - a list of {@AudioFile} to be analyzed
      * 
@@ -77,9 +77,9 @@ public class ComparableAudioFiles {
     }
 
     /**
-     * static factory method to make new {@ComparableAudioFile}
-     * instances, the implementation chosen is dependent on the mode instance
-     * variable
+     * static factory method to make new {@ComparableAudioFile
+     * } instances, the implementation chosen is dependent
+     * on the mode instance variable
      * 
      * @param audioFile - an {@AudioFile} to be analyzed
      * @return {@ComparableAudioFile} that facilitates
@@ -105,13 +105,14 @@ public class ComparableAudioFiles {
         private static int half_sample_frame_size = SAMPLES_PER_FRAME / 2;
         private static int three_quarter_sample_frame_size = SAMPLES_PER_FRAME
                 + half_sample_frame_size;
-        private static int error_threshold = 5;
-        private static double error_density = 9;
-        private static int frame_count_for_5_seconds = 220;
+        private static int error_threshold = 8;
+        private static double error_density = 4.3;
+        private static int frame_count_for_5_seconds = 140;
         private static double offset_in_seconds = ((double) SAMPLES_PER_FRAME)
                 / (2 * 44100.0);
 
-        // configures the ComparableAudioFile class, so that it can be used for a
+        // configures the ComparableAudioFile class, so that it can be used for
+        // a
         // given FFT size and a given length of analysis frame
         static {
             ComparableAudioFile.initialize(FFT_WINDOW_SIZE, SAMPLES_PER_FRAME,
@@ -132,7 +133,7 @@ public class ComparableAudioFiles {
         }
 
         private void computeFingerprint() {
-            int streamingLength = SAMPLES_PER_FRAME * 8;
+            int streamingLength = SAMPLES_PER_FRAME * 32;
             while (audioFile.hasNext()) {
                 computeFingerprintForStreamedChunk(audioFile
                         .getNext(streamingLength));
@@ -167,13 +168,11 @@ public class ComparableAudioFiles {
             int slen = data.length - three_quarter_sample_frame_size;
             for (int i = 0; i < slen;) {
                 applyHannWindow(data, input, i);
-                AcousticAnalyzer
-                        .updateFingerprintUsingAverageDeltaPowerDiff(
-                                performFFT(input), counter++, fingerprint);
+                AcousticAnalyzer.updateFingerprintUsingAverageDeltaPowerDiff(
+                        performFFT(input), counter++, fingerprint);
                 applyHannWindow(data, input, i + half_sample_frame_size);
-                AcousticAnalyzer
-                        .updateFingerprintUsingAverageDeltaPowerDiff(
-                                performFFT(input), counter++, fingerprint);
+                AcousticAnalyzer.updateFingerprintUsingAverageDeltaPowerDiff(
+                        performFFT(input), counter++, fingerprint);
                 i = i + SAMPLES_PER_FRAME;
             }
             // to retain the overlapping component for the next segment
@@ -203,17 +202,17 @@ public class ComparableAudioFiles {
     private static class ComparableAudioFileImplForFastMatch extends
             ComparableAudioFile {
 
-        private static int error_threshold = 5;
-        private static double error_density = 18;
-        private static int frame_count_for_5_seconds = 100;
+        private static int error_threshold = 8;
+        private static double error_density = 8;
+        private static int frame_count_for_5_seconds = 70;
         private static double offset_in_seconds =
                 ((double) SAMPLES_PER_FRAME) / 44100.0;
 
-        // configures the ComparableAudioFile class, so that it can be used for a
-        // given FFT size and a given length of analysis frame
+        // configures the ComparableAudioFile class, so that it can be used for
+        // a given FFT size and a given length of analysis frame
         static {
             ComparableAudioFile.initialize(FFT_WINDOW_SIZE, SAMPLES_PER_FRAME,
-                    FFT_WINDOW_SIZE, error_density, error_threshold,
+                    SAMPLES_PER_FRAME, error_density, error_threshold,
                     frame_count_for_5_seconds, offset_in_seconds);
         }
 
@@ -258,9 +257,8 @@ public class ComparableAudioFiles {
             slen = slen - ignore;
             for (int i = 0; i < slen;) {
                 applyHannWindow(data, input, i);
-                AcousticAnalyzer
-                        .updateFingerprintUsingAverageDeltaPowerDiff(
-                                performFFT(input), counter++, fingerprint);
+                AcousticAnalyzer.updateFingerprintUsingAverageDeltaPowerDiff(
+                        performFFT(input), counter++, fingerprint);
                 i = i + SAMPLES_PER_FRAME;
             }
 

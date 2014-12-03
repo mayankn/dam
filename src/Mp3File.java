@@ -21,7 +21,7 @@ public class Mp3File extends AudioFile {
 
     private static String LAME_DECODER_PATH = "/course/cs5500f14/bin/lame";
     private static String CONVERTED_FILES_DIRECTORY = File.separator + "tmp"
-            + File.separator + dam.getUSERNAME();
+            + File.separator;
 
     private Mp3decoder mp3Decoder;
     private AudioFile internalRepresentation;
@@ -67,9 +67,10 @@ public class Mp3File extends AudioFile {
                 String nameWithWavExtension =
                         shortName.replaceAll("(.mp3)$", ".wav");
                 convertedFileName =
-                        CONVERTED_FILES_DIRECTORY + File.separator + paramNum
-                                + File.separator + AudioFile.FILE_TYPE.MP3
-                                + File.separator + nameWithWavExtension;
+                        CONVERTED_FILES_DIRECTORY + dam.getUserName()
+                                + File.separator + paramNum + File.separator
+                                + AudioFile.FILE_TYPE.MP3 + File.separator
+                                + nameWithWavExtension;
                 ProcessBuilder p =
                         new ProcessBuilder(LAME_DECODER_PATH, "--decode",
                                 fileName, convertedFileName);

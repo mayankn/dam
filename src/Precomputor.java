@@ -123,10 +123,10 @@ public class Precomputor {
     }
 
     /**
-     * Constructs a map of bit reversed indexes. The value at
-     * every index corresponds to the corresponding bit-reversed index. This
-     * method computes the bit reversed indexes for the number of values
-     * specified by the size instance variable
+     * Constructs a map of bit reversed indexes. The value at every index
+     * corresponds to the corresponding bit-reversed index. This method computes
+     * the bit reversed indexes for the number of values specified by the size
+     * instance variable
      */
     private static void constructBitReverseIndexArray() {
         int expVal = log2Map.get(size);
@@ -138,7 +138,7 @@ public class Precomputor {
     }
 
     /**
-     * 
+     * getter for the pre-computed factors for a non-recursive FFT
      * @return
      */
     public static double[] getPrecomputedFactors() {
@@ -146,7 +146,7 @@ public class Precomputor {
     }
 
     /**
-     * 
+     * getter for the bit reverse index mapping
      * @return
      */
     public static int[] getBitReverseIndex() {
@@ -154,7 +154,7 @@ public class Precomputor {
     }
 
     /**
-     * 
+     * getter for the expMap
      * @return
      */
     public static int[] getExpMap() {
@@ -162,7 +162,7 @@ public class Precomputor {
     }
 
     /**
-     * 
+     * Getter for the logMap
      * @return
      */
     public static Map<Integer, Integer> getLogMap() {
@@ -170,7 +170,7 @@ public class Precomputor {
     }
 
     /**
-     * 
+     * To get the pre computed Hann window
      * @return
      */
     public static double[] getHannWindow() {

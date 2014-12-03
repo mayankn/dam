@@ -48,9 +48,10 @@ public class dam {
     private static String MATCH = "MATCH %s %s %.1f %.1f";
     private static String UNEXPECTED_ERROR =
             "ERROR: An unexpected error has occured";
-    public static String USERNAME;
 
-    public static boolean errorOccured;
+    private static String userName;
+
+    private static boolean errorOccured;
 
     /**
      * To check if an error has occurred so far
@@ -58,6 +59,14 @@ public class dam {
      */
     public static boolean isErrorOccured() {
         return errorOccured;
+    }
+
+    /**
+     * To get the user name for temp folder creation
+     * @return - user name passed as a command line arguent
+     */
+    public static String getUserName() {
+        return userName;
     }
 
     /**
@@ -70,45 +79,42 @@ public class dam {
         dam.errorOccured = true;
     }
 
-    public static String getUSERNAME() {
-        return USERNAME;
-    }
-
-
     public static void main(String args[]) {
         try {
-            Long st = System.currentTimeMillis();
             // validates if all the command line arguments are in an acceptable
             // format
             validateCommandLineArguments(args);
 
             List<ComparableAudioFile> comparableAudioFileList1, comparableAudioFileList2;
-
-            // sets the USERNAME
-            if (!args[4].isEmpty()) {
-                USERNAME = args[4];
+            // sets the user name for creation of the temp folder
+            if (args[4] != null) {
+                userName = args[4];
+            } else {
+                throw new RuntimeException(
+                        "ERROR: the user name cannot be null");
             }
-
             // sets the optional execution mode
             if (args.length == 6 && "-fast".equals(args[5])) {
-                ComparableAudioFiles
-                        .setMode(ComparableAudioFiles.MODES.FAST);
+                ComparableAudioFiles.setMode(ComparableAudioFiles.MODES.FAST);
             }
 
-            // creates a list of ComparableAudioFile instances for all the file(s)
+            // creates a list of ComparableAudioFile instances for all the
+            // file(s)
             // represented by or belonging to a folder given by arg[1]
             comparableAudioFileList1 =
                     ComparableAudioFiles
                             .makeListOfComparableAudioFile(AudioFiles
                                     .makeAudioFilesFromArg(args[0], args[1], 1));
-            // creates a list of ComparableAudioFile instances for all the file(s)
+            // creates a list of ComparableAudioFile instances for all the
+            // file(s)
             // represented by or belonging to a folder given by arg[3]
             comparableAudioFileList2 =
                     ComparableAudioFiles
                             .makeListOfComparableAudioFile(AudioFiles
                                     .makeAudioFilesFromArg(args[2], args[3], 2));
 
-            // compares each ComparableAudioFile corresponding to arg[1] to every
+            // compares each ComparableAudioFile corresponding to arg[1] to
+            // every
             // ComparableAudioFile corresponding to arg[3] for check for a
             // matching sequence of audio. If there is a match, prints "MATCH"
             // along with the time in seconds at which the match has occurred
@@ -125,8 +131,6 @@ public class dam {
             if (isErrorOccured()) {
                 System.exit(1);
             }
-            Long et = System.currentTimeMillis();
-            //System.out.println("time: " + (et - st));
         } catch (Exception e) {
             String errMessage = e.getMessage();
             // if the error message is in an unusual format, changes it to an

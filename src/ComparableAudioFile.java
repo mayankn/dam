@@ -162,8 +162,7 @@ public abstract class ComparableAudioFile {
      * This is a helper method used to prepare the bit reversed array needed by
      * the non-recursive FFT implementation. It returns an array of twice the
      * length, where the second half of the array represents the imaginary
-     * component of a complex number. It makes use of the pre-computed
-     * bitReverseArray
+     * components. It makes use of the pre-computed bitReverseArray
      * 
      * @param input - A double array of size 'fftsize'
      * @return - A double array of twice the length as input with values store
@@ -186,7 +185,8 @@ public abstract class ComparableAudioFile {
      * 
      * @param aS2 - {@ComparableAudioFile} object which
      *            encapsulates the audio file to be compared with
-     * @return - a double[2], where,
+     * @return - a double[2], where, result[0] and result[1] corresponds to the
+     *         times at which the match(if any) has occurred
      */
     public double[] getMatchPositionInSeconds(ComparableAudioFile aS2) {
         return computeFragmentMatchWithTime(this.getFingerprint(),
@@ -279,6 +279,8 @@ public abstract class ComparableAudioFile {
         Integer[] sequence = new Integer[size];
         sequence = s.toArray(sequence);
         Arrays.sort(sequence);
+        // if the number of values in the sequence is less than the min values
+        // needed for match, exit early
         if (sequence.length <= min_hash_collisions_for_match) {
             return -1;
         }
@@ -288,6 +290,8 @@ public abstract class ComparableAudioFile {
         int diff = 0;
         for (int i = 0; i < sequence.length - 1;) {
             if (errors >= (error_threshold + (error_density * seq))) {
+                if (cleanupidx == sequence.length)
+                    break;
                 sofar = sofar - diffarr[cleanupidx];
                 errors = errors - errarr[cleanupidx];
                 cleanupidx++;
@@ -331,7 +335,7 @@ public abstract class ComparableAudioFile {
      */
     public void setBitRate(int bitRate) {
         this.bitRate = bitRate;
-    }  
+    }
 
     /**
      * 
