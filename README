@@ -7,10 +7,21 @@
    gunzip and untar the contents of the prototype
    Execute the 'make' command in the root directory of the prototype to
    compile all the necessary files using the Makefile
-   Then execute the dam.sh shell script in the following format:
-   ./dam -f <path_to_first_file> -f <path_to_second_file>
+   Then execute the dam shell script in the following format:
+   ./dam -f <pathname> -f <pathname>
+   ./dam -d <pathname> -d <pathname>
+   ./dam -f <pathname> -d <pathname>
+   ./dam -d <pathname> -f <pathname>
 
 3. Acknowledgements:
    Non recursive FFT - Translated from the pseudocode given in 
    Introduction to Algorithms - Third Edition by
    Cormen, Thomas H.,  Leiserson, Charles E.,  Rivest, Ronald L
+
+   "A Highly Robust Audio Fingerprinting System" - Jaap Haitsma, Ton Kalker
+
+   Bark Scale - http://en.wikipedia.org/wiki/Bark_scale
+
+4. Third party software:
+   lame - CCIS Linux machine
+   oggdec - CCIS Linux machine

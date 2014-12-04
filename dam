@@ -22,7 +22,7 @@ mkdir /tmp/$current_user/2/MP3
 mkdir /tmp/$current_user/2/OGG
 
 # execute java program
-java -cp out dam $1 $2 $3 $4 $current_user -fast
+java -cp out dam $1 $2 $3 $4 $current_user
 exitVal=`echo $?`
 # clear out all tmp files
 rm -rf /tmp/$current_user

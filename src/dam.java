@@ -44,7 +44,8 @@ import java.util.List;
  */
 public class dam {
 
-    private static String INVALID_COMMAND_ERROR = "ERROR: Invalid command line";
+    private static String INVALID_COMMAND_ERROR =
+            "ERROR: Invalid command line";
     private static String MATCH = "MATCH %s %s %.1f %.1f";
     private static String UNEXPECTED_ERROR =
             "ERROR: An unexpected error has occured";

@@ -92,7 +92,8 @@ public class Mp3File extends AudioFile {
                 try {
                     proc.waitFor();
                 } catch (InterruptedException ie) {
-                    throwException(UNEXPECTED_ERROR);
+                    //throwException(UNEXPECTED_ERROR);
+                    // do nothing
                 }
                 proc.destroy();
                 p = null;
@@ -102,7 +103,8 @@ public class Mp3File extends AudioFile {
                     // do nothing
                 }
             } catch (IOException e) {
-                throwException(UNEXPECTED_ERROR);
+                //throwException(UNEXPECTED_ERROR);
+                // do nothing
             }
         }
     }
@@ -164,7 +166,8 @@ public class Mp3File extends AudioFile {
             try {
                 conversionProcess.join();
             } catch (InterruptedException ie) {
-                throwException(UNEXPECTED_ERROR);
+                //throwException(UNEXPECTED_ERROR);
+                // do nothing
             }
             internalRepresentation = mp3Decoder.getConvertedFile();
             if (internalRepresentation == null)

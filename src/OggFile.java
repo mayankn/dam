@@ -94,7 +94,8 @@ public class OggFile extends AudioFile {
                 try {
                     proc.waitFor();
                 } catch (InterruptedException ie) {
-                    throwException(UNEXPECTED_ERROR);
+                    //throwException(UNEXPECTED_ERROR);
+                    // do nothing
                 }
                 proc.destroy();
                 p = null;
@@ -104,7 +105,8 @@ public class OggFile extends AudioFile {
                     // do nothing
                 }
             } catch (IOException e) {
-                throwException(UNEXPECTED_ERROR);
+                //throwException(UNEXPECTED_ERROR);
+                // do nothing
             }
         }
     }
@@ -166,7 +168,8 @@ public class OggFile extends AudioFile {
             try {
                 conversionProcess.join();
             } catch (InterruptedException ie) {
-                throwException(UNEXPECTED_ERROR);
+                //throwException(UNEXPECTED_ERROR);
+                // do nothing
             }
             internalRepresentation = oggDecoder.getConvertedFile();
             if (internalRepresentation == null)

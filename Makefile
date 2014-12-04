@@ -7,6 +7,7 @@ src/AudioFile.java \
 src/AudioFiles.java \
 src/WavFile.java \
 src/Mp3File.java \
+src/OggFile.java \
 src/Precomputor.java \
 src/AcousticAnalyzer.java \
 src/ComparableAudioFile.java \

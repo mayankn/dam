@@ -70,7 +70,8 @@ public abstract class ComparableAudioFile {
         error_density = errorDensity;
         min_hash_collisions_for_match =
                 error_threshold
-                        + (int) ((double) frame_count_for_5_seconds / error_density)
+                        + (int) ((double) frame_count_for_5_seconds
+                        / error_density)
                         + 2;
         offset_in_seconds = offsetInSeconds;
         fftsize = size;

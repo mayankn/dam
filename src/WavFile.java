@@ -58,6 +58,10 @@ public class WavFile extends AudioFile {
         byte[] headerData = new byte[80];
         rf.read(headerData);
         readHeaderChunks(headerData);
+        if (!isAudioFileFormatValid()) {
+            rf.close();
+            throwException(String.format(UNSUPPORTED_FILE_FORMAT, fileName));
+        }
         ch = rf.getChannel();
         rf.seek(dataChunkIdx);
     }
@@ -323,7 +327,7 @@ public class WavFile extends AudioFile {
      */
     @Override
     public boolean isAudioFileFormatValid() {
-        if (!riffType.equalsIgnoreCase("WAVE")) {
+        if (!"WAVE".equalsIgnoreCase(riffType)) {
             return false;
         }
         if (dataChunkIdx == 0) {
